@@ -1,0 +1,167 @@
+
+on load:
+    if list of addons does not contain "Vixio":
+        FileCordBroadcast("Warning! FileCord needs Vixio to function!")
+    wait 2 seconds 
+    if {FileCord.token} is not set:
+        FileCordBroadcast("FileCord token is not set!")
+    else:
+        login to {FileCord.token} with name "FileCord"
+        
+
+    set {FileCord.setting::autodelete} to {FileCord.setting::autodelete} ? false
+    
+    set {FileCord.folder} to {FileCord.folder} ? "FileCord"
+
+on guild message received:
+    if discord id of event-channel is {FileCord.channel}:
+        
+        set {_x} to "%attachment of event-message%"
+        set {_link} to attachment url of attachment of event-message
+        
+        if {_x} is not "<none>":
+
+            replace all "-" with "/" in {_x}
+            
+            if {_x} contains "FileCord":
+                FileCordBroadcast("FileCord file's can only be updated via it's dedicated command! /filecord-update")
+                add reaction "interrobang" to event-message with event-bot
+                stop
+            if {_x} contains ".sk":
+                if {FileCord.folder} is not set:
+                    FileCordBroadcast("Warning! FileCord folder not set but the FileCord channel is!")
+                    add reaction "x" to event-message with event-bot
+                    stop
+                if dir "plugins/Skript/scripts/%{FileCord.folder}%" does not exist:
+                    create dir "plugins/Skript/scripts/%{FileCord.folder}%"
+                if {_x} contains "/":
+                    set {_subFolder::*} to {_x} split at "/"
+                    set {_a} to number of {_subFolder::*}
+                    delete {_subFolder::%{_a}%} 
+                    set {_path} to ""
+                    loop {_subFolder::*}:
+                        set {_path} to "%{_path}%/%loop-value%"
+                        if dir "plugins/Skript/scripts/%{FileCord.folder}%%{_path}%" does not exist:
+                            create dir "plugins/Skript/scripts/%{FileCord.folder}%%{_path}%"
+                add reaction "white_check_mark" to event-message with event-bot
+                if {FileCord.setting::autodelete}:
+                    delete event-message
+                FileCordBroadcast("New file uploaded!")
+                delete file "plugins/Skript/scripts/%{FileCord.folder}%/%{_x}%"
+                download file from {_link} to file "plugins/Skript/scripts/%{FileCord.folder}%/%{_x}%"
+                set {_f} to {_x}
+                replace all ".sk" with "" in {_f}
+                if {FileCord.marked::%{_f}%} is set:
+                    if {FileCord.marked::%{_f}%} is online:
+                        make {FileCord.marked::%{_f}%} execute command "sk %{FileCord.folder}%/%{_x}%"
+                        FileCordBroadcast("Done reloading!")
+                        stop
+                loop all players:
+                    if loop-player is op:   
+                        if "%event-member%" contains "%loop-player%":
+                            make loop-player execute command "sk %{FileCord.folder}%/%{_x}%"
+                            FileCordBroadcast("Done reloading!")
+                            stop
+                loop all players:
+                    if loop-player is op:
+                        make loop-player execute command "sk %{FileCord.folder}%/%{_x}%"
+                        FileCordBroadcast("Done reloading!")
+                        stop
+                command "sk %{FileCord.folder}%/%{_x}%"
+                FileCordBroadcast("Done!")
+                stop
+            if {_x} contains ".jar":
+                add reaction "ballot_box_with_check" to event-message with event-bot
+                if {FileCord.setting::autodelete}:
+                    delete event-message
+                FileCordBroadcast("New plugin uploaded (%{_x}%)! Downloading it now...")
+                delete file "plugins/%{_x}%"
+                download file from {_link} to file "plugins/%{_x}%"
+                FileCordBroadcast("Finished downloading plugin! A reload or restart is required for it to take effect!")
+                stop
+            add reaction "grey_question" to event-message with event-bot
+        else:
+            add reaction "question" to event-message with event-bot
+
+command /filecord-mark [<string>]:
+    permission: admin 
+    trigger:
+        if arg 1 is not set:
+            FileCordSend(player,"Usage: &b/filecord-mark <scriptName>&f This will mark the file as your so you will be the one seeing the errors it might give when reloading no matter what")
+        else:
+            set {_f} to arg 1
+            replace all ".sk" with "" in {_f}
+            set {FileCord.marked::%{_f}%} to player
+            FileCordSend(player,"Marked &b%{_f}%.sk&f as yours!")
+        
+command /filecord-channel [<string>]:
+    permission: trigger
+    trigger:
+        set {FileCord.channel} to arg 1
+        set {_name} to channel with id {FileCord.channel}
+        FileCordSend(player,"Set download channel to %{_name}%")
+        
+command /filecord-token [<string>]:
+    permission: trigger
+    trigger:
+        set {FileCord.token} to arg 1
+        logout of "FileCord"
+        login to {FileCord.token} with name "FileCord"
+        FileCordSend(player,"Set bot to %{FileCord.token}%")
+
+command /filecord-folder [<string>]:
+    permission: trigger
+    trigger:
+
+        set {FileCord.folder} to arg 1
+        replace all "/" with "" in {FileCord.folder}
+        replace all "\" with "" in {FileCord.folder}
+        
+        FileCordSend(player,".sk download folder set to %{FileCord.folder}%")
+
+command /filecord-settings [<string>] [<string>]:
+    permission: admin 
+    trigger:
+        if arg 2 is not set:
+            FileCordSend(player,"Available settings:")
+            set {_setting::autodelete} to "Automatically delete .sk uploads after downloading"
+            
+            loop {_setting::*}:
+                if {FileCord.setting::%loop-index%}:
+                    set {_c} to "&aEnabled"
+                else:
+                    set {_c} to "&cDisabled"
+                send formatted "%{_c}% &f%loop-value% &a<tooltip:Click to enable><suggest command:/filecord-settings %loop-index% true>[✔] <reset><tooltip:Click to disable><suggest command:/filecord-settings %loop-index% false>&c[❌]"
+        else:
+            set {FileCord.setting::%arg 1%} to arg 2 parsed as boolean
+            if arg 2 is "true":
+                FileCordSend(player,"Enabled &e%arg 1%")
+            else:
+                FileCordSend(player,"Disabled &e%arg 1%")
+            
+command /filecord-delete [<string>]:
+    permission: trigger
+    trigger:
+        if {FileCord.folder} is not set:
+            FileCordSend(player,"You haven't set your FileCord folder yet!")
+        if file "plugins/Skript/scripts/%{FileCord.folder}%/%arg 1%.sk" does not exist:
+            FileCordSend(player,"File %{FileCord.folder}%/%arg 1% didnt exist")
+        else:
+            unload script file "%{FileCord.folder}%/%arg 1%.sk"
+            delete file "plugins/Skript/scripts/%{FileCord.folder}%/-%arg 1%.sk" 
+            FileCordSend(player,"Deleted %{FileCord.folder}%/%arg 1%")
+
+
+function FileCordSend(p:player,m:string):
+    message "<##00847A>[FileCord] &8| &f%{_m}%" to {_p}
+
+function FileCordBroadcast(m:string):
+    broadcast "<##00847A>[FileCord] &8| &f%{_m}%"
+
+on tab complete of "/filecord-delete":
+    set {_scripts::*} to loaded scripts 
+    loop {_scripts::*}:
+        if loop-value contains "Packages":
+            remove loop-value from {_scripts::*}
+    remove "Qween.sk" from {_scripts::*}
+    set tab completions for position 1 to {_scripts::*}
