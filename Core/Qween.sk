@@ -4,7 +4,6 @@
 #  please do not claim ownership of Qween
 #  
 
-
 on load:
     delete {PackageName::*}
     AddPackage("AdminWand")
@@ -57,8 +56,7 @@ command /package-install [<string>]:
     trigger:
         QweenSend(player, "Finding package...")
         set {_pack} to {PackageName::%arg 1%} ? arg 1
-        set {_link} to "https://raw.githubusercontent.com/Flowwave/Qween/main/Packages/%{pack}%.sk"
-        
+        set {_link} to "https://raw.githubusercontent.com/Flowwave/Qween/main/Packages/%{_pack}%.sk"
         set {_x} to response code of url {_link}
         if {_x} is not 200:
             QweenSend(player, "Could not find package! It either doesn't exists, or you made a typo...")
