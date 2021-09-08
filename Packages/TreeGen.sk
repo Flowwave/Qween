@@ -1,0 +1,239 @@
+command /tree-oak:
+  permission: admin
+  trigger:
+    set {treeOak} to oak sapling named "&eGenTree Oak"
+    set player's tool to {treeOak}
+command /tree-birch:
+  permission: admin
+  trigger:
+    set {treeBirch} to birch sapling named "&eGenTree Birch"
+    set player's tool to {treeBirch}
+command /tree-spruce:
+  permission: admin
+  trigger:
+    set {treeSpruce} to spruce sapling named "&eGenTree Spruce"
+    set player's tool to {treeSpruce}
+
+on block place:
+  if player's gamemode is creative:
+    if player's tool is {treeSpruce}:
+      gen_tree_pine(event-block)
+    if event-block is {treeOak}:
+      gen_tree_oak(block below event-block)
+    if event-block is {treeBirch}:
+      gen_tree_birch(event-block)
+
+
+function gen_leaves(pos:location):
+  set block at {_pos} to oak leaves
+  set {_count} to TreeRandI(9,15)
+  loop ({_count}) times:
+    set {_angle} to loop-number/{_count} * 360
+    
+    set {_x} to sin({_angle}+TreeRandF(-10,10) ) 
+    set {_x} to {_x}*TreeRandF(0.2,0.6)
+    set {_z} to cos({_angle}+TreeRandF(-10,10) ) 
+    set {_z} to {_z}* TreeRandF(0.2,0.6)
+    set {_y} to TreeRandF(0.1,0.6)
+    
+    set {_grav} to TreeRandF(0.1,0.23)
+    set {_fric} to TreeRandF(0.9,0.92)
+    
+    set {_block} to {_pos}
+    loop TreeRandI(7,10) times:
+      add {_x} to x-pos of {_block}
+      add {_z} to z-pos of {_block}
+      add {_y} to y-pos of {_block}
+      set block at {_block} to persistent dark oak leaves
+      remove {_grav} from {_y}
+      set {_x} to {_x}*{_fric}
+      set {_z} to {_z}*{_fric}
+      
+
+
+function gen_tree_birch(pos:location):
+  set block at {_pos} to stripped birch log
+
+
+  loop all blocks in radius 0.9 of block below {_pos}:
+    set loop-block to stripped birch log
+  set {_leaves} to persistent birch leaves
+  set {_height} to TreeRandI(4,7)
+  set {_tiltDir} to TreeRandI(0,360)
+  set {_tilt} to TreeRandF(2,4)
+  set {_baseSin} to TreeRandI(0,360)
+  set {_leafHeight} to TreeRandI(0,2)
+
+  set {_top} to floor({_height}*0.8)
+
+  loop {_height} times:
+    wait 1 tick
+    set {_block} to {_pos}
+    add loop-number to y-pos of {_block}
+    
+    set {_tiltH} to (1.1^loop-number)/50 + loop-number/20
+    add sin({_tiltDir})*{_tilt}*{_tiltH} to x-pos of {_block}
+    add cos({_tiltDir})*{_tilt}*{_tiltH} to z-pos of {_block}
+
+    set block at {_block} to stripped birch wood
+    set {_leafSpawn} to false
+    if (loop-number) is {_height}:
+      set {_leafSpawn} to true
+    if (loop-number) is {_height}-2:
+      set {_leafSpawn} to true
+    if (loop-number) is {_height}-4:
+      set {_leafSpawn} to true
+
+    if {_leafSpawn}:
+      set {_c} to {_block}
+
+      set {_angle} to TreeRandF(0,360)
+      add sin({_angle})*0.3 to x-pos of {_c}
+      add cos({_angle})*0.3 to z-pos of {_c}
+
+      add 1 to y-pos of {_c}
+      set {_leafSize} to TreeRandF(1.3,2.4)
+      if loop-number is {_height}:
+        set {_leafSize} to TreeRandF(1.3,1.7)
+      loop all blocks in radius {_leafSize} of {_c}:
+        if y-pos of loop-block is y-pos of block at {_c}:
+          set loop-block to {_leaves}
+      add sin({_angle})*0.4 to x-pos of {_c}
+      add cos({_angle})*0.4 to z-pos of {_c}
+
+      if block below {_c} is air:
+        set block below {_c} to birch fence
+#
+#
+#
+#
+
+
+
+function gen_tree_pine(pos:location):
+  set block at {_pos} to air
+
+  loop all blocks in radius 0.9 of block below {_pos}:
+    set loop-block to spruce log
+  set {_leaves} to persistent spruce leaves
+  set {_height} to TreeRandI(12,18)
+  set {_tiltDir} to TreeRandI(0,360)
+  set {_tilt} to TreeRandF(1,5)
+  set {_baseSin} to TreeRandI(0,360)
+  set {_leafHeight} to TreeRandI(0,2)
+
+  set {_top} to floor({_height}*0.8)
+
+  loop {_height} times:
+    wait 1 tick
+    set {_block} to {_pos}
+    add loop-number to y-pos of {_block}
+    
+    set {_tiltH} to (1.2^loop-number)/50 + loop-number/20
+    add sin({_tiltDir})*{_tilt}*{_tiltH} to x-pos of {_block}
+    add cos({_tiltDir})*{_tilt}*{_tiltH} to z-pos of {_block}
+
+    if loop-number is more than {_top}:
+      set block at {_block} to {_leaves}
+    else:
+      set block at {_block} to spruce wood
+      set block below {_block} to spruce wood
+      if loop-number is more than {_leafHeight}:
+        set {_scale} to TreeRandF(0.2,1)
+        set {_leafSize} to 1+({_height} - loop-number)/6 * {_scale}
+        set {_chance} to 70
+        if loop-number is {_top} or {_top}-2:
+          set {_chance} to 100
+          add 0.2 to {_leafSize}
+
+        loop all blocks in radius {_leafSize} of {_block}:
+          if loop-block is air:
+            if floor(y-pos of loop-block) is floor(y-pos of {_block}):
+              chance of 70%:
+                set loop-block to {_leaves}
+
+
+
+function gen_tree_oak(loc:location):
+  set {_log} to oak wood
+  set {_leaves} to persistent oak leaves
+  
+  set {_height} to a random number between 6 and 11
+  set {_baseHeight} to a random number between 1 and 3
+  set {_angle} to a random number between 0 and 360
+  set {_angleStrengh} to a random number between 0.1 and 0.3
+
+  set {_branchCount} to a random number between 4 and 6
+  set {_branchMin} to 3
+  set {_branchMax} to 5
+
+
+  loop {_height} times:
+    set {_b} to {_loc}
+    
+    add sin({_angle})*loop-number*{_angleStrengh} to x-pos of {_b}
+    add cos({_angle})*loop-number*{_angleStrengh} to z-pos of {_b}
+    
+
+    add loop-number to y-pos of {_b}
+    set block at {_b} to {_log}
+    set block above {_b} to {_log}
+    
+    set {_top} to location of block above {_b}
+
+    if loop-number is less or equal to {_baseHeight}:
+      add -1*sin({_angle}) to x-pos of {_b}
+      add -1*cos({_angle}) to z-pos of {_b}
+      set block at {_b} to {_log}
+      
+  loop {_branchCount} times:
+    set {_branchDir::%loop-number%} to a random number between 1 and 360
+    set {_branchUp::%loop-number%} to a random number between 10 and 90
+    set {_branchLenght::%loop-number%} to a random number between {_branchMin} and {_branchMax}
+
+  loop {_branchCount} times:
+    loop {_branchCount} times:
+      if {_branchDir::%loop-number-1%} is less than {_branchDir::%loop-number-2%} + 10:
+        if {_branchDir::%loop-number-1%} is more than {_branchDir::%loop-number-2%} - 10:
+          add 40 to {_branchDir::%loop-number-1%} 
+
+    
+  loop {_branchCount} times:
+    set {_l} to {_top}
+    set {_b} to loop-number-1
+
+    loop {_branchLenght::%loop-number%} times:
+      set {_n} to loop-number-2
+      add sin({_branchDir::%{_b}%}) to x-pos of {_l}
+      add cos({_branchDir::%{_b}%}) to z-pos of {_l}
+      add sin({_branchUp::%{_b}%}) to y-pos of {_l}
+      set block at {_l} to {_log}
+      set {_branchTip::%{_b}%} to {_l}
+  
+
+    loop all blocks in radius 1.5 of {_branchTip::%loop-number%}:
+      if loop-block is air:
+        set loop-block to {_leaves}
+    remove 2 from y-pos of {_branchTip::%loop-number%}
+    loop all blocks in radius 1 of {_branchTip::%loop-number%}:
+      if loop-block is air:
+        set loop-block to {_leaves}
+    remove 1 from y-pos of {_branchTip::%loop-number%}
+    loop all blocks in radius 0.5 of {_branchTip::%loop-number%}:
+      if loop-block is air:
+        set loop-block to {_leaves}
+    remove 1 from y-pos of {_branchTip::%loop-number%}
+    loop all blocks in radius 0.5 of {_branchTip::%loop-number%}:
+      if loop-block is air:
+        set loop-block to {_leaves}
+    chance of 40%:
+      remove 1 from y-pos of {_branchTip::%loop-number%}
+    loop all blocks in radius 0.5 of {_branchTip::%loop-number%}:
+      if loop-block is air:
+        set loop-block to {_leaves}
+
+
+function TreeRandI(least:integer,most:integer) :: integer:
+  return a random integer between {_least} and {_most}
+function TreeRandF(least:number,most:number) :: number:
+  return a random number between {_least} and {_most}

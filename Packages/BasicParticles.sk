@@ -1,0 +1,88 @@
+function Particle(location:location,particle:particle,amount:number=1,speed:number=0,force:boolean=false):
+    add 1 to {emitCount}
+    #play {_amount} of {_particle} at {_location} offset by vector({_vecX},{_vecY},{_vecZ}) with extra {_speed}
+    add {_location} to {emitLoc::*}
+    add {_particle} to {emitParticle::*}
+    add {_amount} to {emitAmount::*}
+    add {_speed} to {emitSpeed::*}
+    add vector(0,0,0) to {emitVector::*}
+    add {_force} to {emitForce::*}
+
+function ParticleNew(location:location,particle:particle,amount:number=1,speed:number=0,force:boolean=false):
+    add 1 to {emitCount}
+    #play {_amount} of {_particle} at {_location} offset by vector({_vecX},{_vecY},{_vecZ}) with extra {_speed}
+    add {_location} to {emitLoc::*}
+    add {_particle} to {emitParticle::*}
+    add {_amount} to {emitAmount::*}
+    add {_speed} to {emitSpeed::*}
+    add vector(0,0,0) to {emitVector::*}
+    add {_force} to {emitForce::*}
+    #
+
+function ParticleVector(v:vector):
+    set {emitVector::%{emitCount}%} to {_v}
+
+function ParticleOffset(x:number,y:number,z:number):
+    add {_x} to x-pos of {emitLoc::%{emitCount}%}
+    add {_y} to y-pos of {emitLoc::%{emitCount}%}
+    add {_z} to z-pos of {emitLoc::%{emitCount}%}
+
+function ParticlePlayer(p:player):
+    set {emitPlayer::%{emitCount}%} to {_p}
+
+
+function Emit():
+    loop {emitForce::*}:
+        if loop-value:
+            play {emitAmount::%loop-index%} of {emitParticle::%loop-index%} at {emitLoc::%loop-index%} offset by {emitVector::%loop-index%} with extra {emitSpeed::%loop-index%} to all players
+        else:
+            if {emitPlayer::%loop-index%} is set:
+                play {emitAmount::%loop-index%} of {emitParticle::%loop-index%} at {emitLoc::%loop-index%} offset by {emitVector::%loop-index%} with extra {emitSpeed::%loop-index%} to {emitPlayer::%loop-index%}
+            else:
+                play {emitAmount::%loop-index%} of {emitParticle::%loop-index%} at {emitLoc::%loop-index%} offset by {emitVector::%loop-index%} with extra {emitSpeed::%loop-index%}
+
+on every tick:
+    Emit()
+    delete {emitLoc::*}
+    delete {emitAmount::*}
+    delete {emitParticle::*}
+    delete {emitVector::*}
+    delete {emitSpeed::*}
+    delete {emitForce::*}
+    delete {emitCount}
+
+
+function ParticleLine(posA:location,posB:location,p:particle,density:number=3,force:boolean=false,max:number=0):
+    if {_max} is more than 0:
+        set {_a} to min({_density}*distance between {_posA} and {_posB},{_max})
+    else:
+        set {_a} to {_density}
+    loop {_a} times:
+        set {_vec} to {_posA}
+        add (x-pos of {_posB} - x-pos of {_posA})*(loop-number - 0.5)/{_a} to x-pos of {_vec}
+        add (y-pos of {_posB} - y-pos of {_posA})*(loop-number - 0.5)/{_a} to y-pos of {_vec}
+        add (z-pos of {_posB} - z-pos of {_posA})*(loop-number - 0.5)/{_a} to z-pos of {_vec}
+        
+        ParticleNew({_vec},{_p},0,0,{_force})
+
+function ParticleLinePlayer(posA:location,posB:location,p:particle,player:player,density:number=3,max:number=0):
+    if {_max} is more than 0:
+        set {_a} to min({_density}*distance between {_posA} and {_posB},{_max})
+    else:
+        set {_a} to {_density}
+    loop {_a} times:
+        set {_vec} to {_posA}
+        add (x-pos of {_posB} - x-pos of {_posA})*(loop-number - 0.5)/{_a} to x-pos of {_vec}
+        add (y-pos of {_posB} - y-pos of {_posA})*(loop-number - 0.5)/{_a} to y-pos of {_vec}
+        add (z-pos of {_posB} - z-pos of {_posA})*(loop-number - 0.5)/{_a} to z-pos of {_vec}
+        
+        ParticleNew({_vec},{_p},0,0)
+        ParticlePlayer({_player})
+function Sound(player:player,sound:string="entity.experience_orb.pickup",pitch:number=1,volume:number=1,channel:sound category=player category):
+    play sound {_sound} in {_channel} at volume {_volume} at pitch {_pitch} to {_player}
+
+function SoundPlayer(player:player,sound:string="entity.experience_orb.pickup",pitch:number=1,volume:number=1,channel:sound category=player category):
+    play sound {_sound} in {_channel} at volume {_volume} at pitch {_pitch} to {_player}
+
+function SoundAt(loc:location,sound:string="entity.experience_orb.pickup",pitch:number=1,volume:number=1,channel:sound category=player category):
+    play sound {_sound} in {_channel} at volume {_volume} at pitch {_pitch} at {_loc}

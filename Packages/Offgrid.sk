@@ -1,0 +1,99 @@
+on load:
+    set {gridwand} to golden hoe named "<##f88a56>Gridwand"
+    command "gamerule sendCommandFeedback false"
+
+command /gridwand:
+    aliases: offgrid, offgridwand
+    permission: offgrid
+    trigger:
+        add {gridwand} to player's inventory
+
+on leftclick:
+    if player's tool is {gridwand}:
+        cancel event
+        if event-block is set:
+            set {_block} to minecraft name of event-block
+            set {_pos} to location of event-block 
+            remove 0.5 from y-pos of {_pos}
+            
+            if {_block} contains "slab" or "button" or "fence" or "wall" or "flower" or "carpet" or "stair" or "chain" or "lily_pad":
+                command "execute at %player% positioned %x-pos of {_pos}% %y-pos of {_pos}% %z-pos of {_pos}% run summon armor_stand ~ ~ ~ {GridFree:1b,NoGravity:1b,Silent:1b,Invulnerable:1b,Marker:1b,Invisible:1b,Tags:[""GridFree"",""GridFreeSatnd""],Passengers:[{id:""minecraft:falling_block"",BlockState:{Name:""%{_block}%""},NoGravity:1b,Silent:1b,Time:-200000,DropItem:0b,Tags:[""GridFree"",""GridFreeBlock""],GridFree:1b}]}"
+            else:
+                command "execute at %player% positioned %x-pos of {_pos}% %y-pos of {_pos}% %z-pos of {_pos}% run summon armor_stand ~ ~ ~ {GridFree:1b,NoGravity:1b,Silent:1b,Invulnerable:1b,Marker:1b,Invisible:1b,Tags:[""GridFree"",""GridFreeSatnd""],Passengers:[{id:""minecraft:shulker"",NoGravity:1b,Silent:1b,Invulnerable:1b,AttachFace:0b,Tags:[""GridFree"",""GridFreeShulker""],ActiveEffects:[{Id:14b,Amplifier:0b,Duration:200000000,ShowParticles:0b}],GridFree:1b,NoAI:1b},{id:""minecraft:falling_block"",BlockState:{Name:""%{_block}%""},NoGravity:1b,Silent:1b,Time:-200000,DropItem:0b,Tags:[""GridFree"",""GridFreeBlock""],GridFree:1b}]}"
+
+            add 1 to {gridID}
+            set event-block to air 
+        
+on damage:
+    if victim is shulker or falling block:
+        if attacker's tool is {gridwand}:
+            set {_v} to vehicle of victim
+            
+            
+             
+            
+            
+            loop all entities in radius 0.01 of {_v}:
+                if loop-entity is falling block:
+                    if attacker is sneaking:
+                        add "{NoGravity:0b}" to nbt of loop-entity
+                if loop-entity is shulker:
+                    
+                    add "{NoGravity:0b}" to nbt of loop-entity
+            if attacker is not sneaking:
+                kill {_v}
+on rightclick:
+    if player's tool is {gridwand}:
+        cancel event
+        if {gridSelect::%player%} is set:
+            if {gridSelectSleep::%player%} < 0:
+                delete {gridSelect::%player%}
+        else:
+            if clicked entity is shulker or falling block:
+                if vehicle of clicked entity is set:
+                
+                    play sound "block.iron_door.open" at pitch 2 to player 
+                    play sound "entity.experience_orb.pickup" at pitch 1.4 to player 
+
+                    set {_s::*} to {_id} split at "/"
+                    set {_id} to {_s::1}
+                    add "{Glowing:0b}" to nbt of clicked entity
+
+                    set {gridSelect::%player%} to vehicle of clicked entity
+                    set {gridSelectSleep::%player%} to 4
+                    set {_pos} to location of vehicle of clicked entity
+                    set {_dist} to distance between player and {_pos}
+                    set {_anchor} to GridFreedRayCastStep(player's position,{_dist})
+                    while {gridSelect::%player%} is set:
+                        remove 1 from {gridSelectSleep::%player%}
+                        set {_uuid} to uuid of vehicle of clicked entity
+                        wait 1 tick 
+                        set {_now} to GridFreedRayCastStep(player's position,{_dist})
+                        set {_x} to x-pos of {_now} - x-pos of {_anchor}
+                        set {_y} to y-pos of {_now} - y-pos of {_anchor}
+                        set {_z} to z-pos of {_now} - z-pos of {_anchor}
+
+                        set {_snap} to 16
+                        if player is not sneaking:
+                            set {_snap} to 4
+                        set {_x} to round({_x}*{_snap}) / {_snap}
+                        set {_y} to round({_y}*{_snap}) / {_snap}
+                        set {_z} to round({_z}*{_snap}) / {_snap}
+                        
+
+                        command "execute as %{_uuid}% at @s positioned %x-pos of {_pos}% %y-pos of {_pos}% %z-pos of {_pos}% run tp @s ~%{_x}% ~%{_y}% ~%{_z}%"
+                    add "{Glowing:0b}" to nbt of clicked entity
+                    play sound "block.iron_door.close" at pitch 2 to player 
+                    play sound "entity.experience_orb.pickup" at pitch 1.2 to player 
+                    delete {gridSelectSleep::%player%}
+
+function GridFreedRayCastStep(l:location,n:number) :: location:
+    add sin(pitch of {_l})*-1*{_n} to y-pos of {_l}
+    set {_dY} to abs(cos(pitch of {_l}))*{_n}
+    add sin(yaw of {_l})*-1*{_dY} to x-pos of {_l}
+    add cos(yaw of {_l})*{_dY} to z-pos of {_l}
+    
+    return {_l}
+
+on every second:
+    command "execute as @e[type=minecraft:falling_block] run data merge entity @s {Time:-1000000}"

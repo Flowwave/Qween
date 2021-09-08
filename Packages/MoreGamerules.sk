@@ -1,0 +1,59 @@
+
+command /autogamerule [<string>]:
+    permission: admin 
+    trigger:
+        set {_gamerule} to "commandBlockOutput false,logAdminCommands false,announceAdvancements false,doDaylightCycle false,doEntityDrops false,doFireTick false,doImmediateRespawn true,doInsomnia false,doLimitedCrafting true,doMobSpawning false,doMobLoot false,doTileDrops false,doWeatherCycle false,keepInventory true,logAdminCommands false,mobGriefing false,randomTickSpeed 0,sendCommandFeedback false,spawnRadius 0,spectatorsGenerateChunks false"
+        set {_gamerule::*} to {_gamerule} split at ","
+        loop {_gamerule::*}:
+            make player execute command "gamerule %loop-value%"
+            message "&e%loop-value%"
+
+
+on load:
+    set {_gamerule} to "doHunger,maxHealth,allowInteract,doPhysics,allowSpectatorTeleport"
+    set {_gameruleValue} to "true,20      ,         true,     true,                  true"
+    replace all " " with "" in {_gameruleValue}
+    set {gameruleList::*} to {_gamerule} split at ","
+    set {_value::*} to {_gameruleValue} split at ","
+    
+    loop {gameruleList::*}:
+        set {gameruleValue::%loop-value%} to {_value::%loop-index%}
+
+command /moreGamerule [<string>] [<string>]:
+    aliases: moregamerules
+    permission: admin 
+    trigger:
+        if {gameruleList::*} contains arg 1:
+            if arg 2 is not set:
+                message "%{gameruleValue::%arg 1%}%"
+            else:
+                set {gameruleValue::%arg 1%} to arg 2 
+
+on tab complete for "/moregamerule":
+    set tab completions for position 1 to {gameruleList::*}
+
+on food bar change:
+    if {gameruleValue::doHunger} is "false":
+        set player's hunger to 10 
+        set player's saturation to 10
+
+on damage:
+    if victim is a player:
+        if {overwrite.maxhealth::%victim%} is set:
+            set victim's maximum health to {overwrite.maxhealth::%victim%}/2
+        else:
+            set victim's maximum health to {gameruleValue::maxHealth}/2
+
+on join:
+    if {overwrite.maxhealth::%player%} is set:
+        set player's maximum health to {overwrite.maxhealth::%player%}/2
+    else:
+        set player's maximum health to {gameruleValue::maxHealth}/2
+
+function OverwriteMaxHealth(player:player,health:number):
+    set {overwrite.maxhealth::%{_player}%} to {_health}
+
+function OverwriteRemove(player:player,overwrite:string):
+    delete {overwrite.%{_overwrite}%::%{_player}%}
+
+function UpdateHealt

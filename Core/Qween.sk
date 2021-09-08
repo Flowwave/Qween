@@ -1,0 +1,280 @@
+#
+# For installing
+#
+on load:
+    wait 2 seconds 
+    if {qween.token} is not set:
+        
+        QweenBroadcast("Qween token is not set!")
+    else:
+        login to {qween.token} with name "Qween"
+        
+        command "qween-update"
+
+    set {qween.setting::autodelete} to {qween.setting::autodelete} ? false
+    
+
+on guild message received:
+    if discord id of event-channel is "875288528974671942":
+        QweenBroadcast("A new version of Qween is available! Use /qween-update to get it!")
+    if discord id of event-channel is {qween.channel}:
+        
+        set {_x} to "%attachment of event-message%"
+        set {_link} to attachment url of attachment of event-message
+        
+        if {_x} is not "<none>":
+
+            replace all "-" with "/" in {_x}
+            
+            if {_x} contains "Qween":
+                QweenBroadcast("Qween file's can only be updated via it's dedicated command! /qween-update")
+                add reaction "interrobang" to event-message with event-bot
+                stop
+            if {_x} contains ".sk":
+                if {qween.folder} is not set:
+                    QweenBroadcast("Warning! Qween folder not set but the Qween channel is!")
+                    add reaction "x" to event-message with event-bot
+                    stop
+                if dir "plugins/Skript/scripts/%{qween.folder}%" does not exist:
+                    create dir "plugins/Skript/scripts/%{qween.folder}%"
+                if {_x} contains "/":
+                    set {_subFolder::*} to {_x} split at "/"
+                    set {_a} to number of {_subFolder::*}
+                    delete {_subFolder::%{_a}%} 
+                    set {_path} to ""
+                    loop {_subFolder::*}:
+                        set {_path} to "%{_path}%/%loop-value%"
+                        if dir "plugins/Skript/scripts/%{qween.folder}%%{_path}%" does not exist:
+                            create dir "plugins/Skript/scripts/%{qween.folder}%%{_path}%"
+                add reaction "white_check_mark" to event-message with event-bot
+                if {qween.setting::autodelete}:
+                    delete event-message
+                QweenBroadcast("New file uploaded! Downloading and Reloading...")
+                delete file "plugins/Skript/scripts/%{qween.folder}%/%{_x}%"
+                download file from {_link} to file "plugins/Skript/scripts/%{qween.folder}%/%{_x}%"
+                set {_f} to {_x}
+                replace all ".sk" with "" in {_f}
+                if {qween.marked::%{_f}%} is set:
+                    if {qween.marked::%{_f}%} is online:
+                        make {qween.marked::%{_f}%} execute command "sk %{qween.folder}%/%{_x}%"
+                        QweenBroadcast("Done!")
+                        stop
+                loop all players:
+                    if loop-player is op:   
+                        if "%event-member%" contains "%loop-player%":
+                            make loop-player execute command "sk %{qween.folder}%/%{_x}%"
+                            QweenBroadcast("Done!")
+                            stop
+                loop all players:
+                    if loop-player is op:
+                        make loop-player execute command "sk %{qween.folder}%/%{_x}%"
+                        QweenBroadcast("Done!")
+                        stop
+                command "sk %{qween.folder}%/%{_x}%"
+                QweenBroadcast("Done!")
+                stop
+            if {_x} contains ".jar":
+                add reaction "ballot_box_with_check" to event-message with event-bot
+                if {qween.setting::autodelete}:
+                    delete event-message
+                QweenBroadcast("New plugin uploaded (%{_x}%)! Downloading it now...")
+                delete file "plugins/%{_x}%"
+                download file from {_link} to file "plugins/%{_x}%"
+                QweenBroadcast("Finished downloading plugin! A reload or restart is required for it to take effect!")
+                stop
+            add reaction "grey_question" to event-message with event-bot
+        else:
+            add reaction "question" to event-message with event-bot
+
+command /qween-mark [<string>]:
+    permission: admin 
+    trigger:
+        if arg 1 is not set:
+            QweenSend(player,"Usage: &b/qween-mark <scriptName>&f This will mark the file as your so you will be the one seeing the errors it might give when reloading no matter what")
+        else:
+            set {_f} to arg 1
+            replace all ".sk" with "" in {_f}
+            set {qween.marked::%{_f}%} to player
+            QweenSend(player,"Marked &b%{_f}%.sk&f as yours!")
+command /package-list [<string>]:
+    permission: admin
+    trigger:
+        QweenSend(player,"These are your installed packages:")
+        loop {qween.packageversion::*}:
+            set {_pack} to {Qween.PackageName::%loop-index%}
+            send formatted "<tooltip:Click to Update><suggest command:/package-install %{_pack}%>&e[⭐] <tooltip:Click to Uninstall><suggest command:/package-uninstall %{_pack}%>&c[❌] <reset>&d %{_pack}% &7v%loop-value%"
+
+            
+command /package-uninstall [<string>]:
+    permission: admin 
+    trigger:
+        set {_pack} to {Qween.PackageName::%arg 1%} ? arg 1
+        if file "plugins/Skript/scripts/Packages/%{_pack}%.sk" does not exist:
+            QweenSend(player,"You do not have that package installed, So it couldn't be removed!")
+        else:
+            QweenSend(player,"Uninstalling %{_pack}%...")
+            unload script file "Packages/%{_pack}%.sk"
+
+            delete file "plugins/Skript/scripts/Packages/-%{_pack}%.sk"
+            delete file "plugins/Skript/scripts/Packages/%{_pack}%.sk"
+            
+            delete {qween.packageversion::%{_pack}%}
+            QweenSend(player,"Uninstalled %{_pack}%!")
+
+            
+        
+
+command /package-install [<string>]:
+    permission: admin 
+    trigger:
+        QweenSend(player, "Finding package...")
+        set {_channel} to channel with name arg 1 in lower case
+        if discord id of {_channel} is not set:
+            QweenSend(player, "Could not find package! It either doesn't exists, or you made a typo...")
+            stop
+        set {id} to discord id of {_channel}
+        grab the last 1 messages in channel with id {id}
+        message "."
+
+        set {_msg} to first element of grabbed messages
+        set {_x} to "%attachment of {_msg}%"
+        set {_link} to attachment url of attachment of {_msg}
+        message ".."
+        replace all arg 1 with "" in {_x}
+        replace all ".sk" with "" in {_x}
+        set {_x} to {_x} parsed as number
+        set {_str} to "%attachment of {_msg}%"
+        replace all ".sk" with "" in {_str}
+        replace all "%{_x}%" with "" in {_str}
+        message "..."
+        add reaction "star" to {_msg} with "Qween"
+        set {Qween.PackageName::%{_str}%} to {_str}
+        if {_x} is more than {qween.packageversion::%{_str}%}+0:
+            QweenSend(player, "Installing... %{_str}%.sk &7v%{qween.packageversion::%{_str}%}+0% -> v%{_x}%")
+            set {qween.packageversion::%{_str}%} to {_x}
+            delete file "plugins/Skript/scripts/Packages/%{_str}%.sk"
+            if dir "plugins/Skript/scripts/Packages" does not exist:
+                create dir "plugins/Skript/scripts/Packages"
+            download file from {_link} to file "plugins/Skript/scripts/Packages/%{_str}%.sk"
+            
+            command "skript reload Packages/%{_str}%"
+            QweenSend(player, "Finished installing %{_str}%.sk")
+        else:
+            QweenSend(player,"You are running the latest version of %{_str}%.sk &7v%{_x}%")
+
+
+command /qween-channel [<string>]:
+    permission: trigger
+    trigger:
+        set {qween.channel} to arg 1
+        set {_name} to channel with id {qween.channel}
+        QweenSend(player,"Set download channel to %{_name}%")
+        
+command /qween-token [<string>]:
+    permission: trigger
+    trigger:
+        set {qween.token} to arg 1
+        logout of "Qween"
+        login to {qween.token} with name "Qween"
+        QweenSend(player,"Set bot to %{qween.token}%")
+
+command /qween-folder [<string>]:
+    permission: trigger
+    trigger:
+        set {qween.folder} to arg 1
+        QweenSend(player,".sk download folder set to %{qween.folder}%")
+
+command /qween-settings [<string>] [<string>]:
+    permission: admin 
+    trigger:
+        if arg 2 is not set:
+            QweenSend(player,"Available settings:")
+            set {_setting::autodelete} to "Autodelete .sk uploads after downloading"
+            loop {_setting::*}:
+                if {qween.setting::%loop-index%}:
+                    set {_c} to "&aEnabled"
+                else:
+                    set {_c} to "&cDisabled"
+                send formatted "%{_c}% &f%loop-value% &a<tooltip:Click to enable><suggest command:/qween-settings %loop-index% true>[✔] <reset><tooltip:Click to disable><suggest command:/qween-settings %loop-index% false>&c[❌]"
+        else:
+            set {qween.setting::%arg 1%} to arg 2 parsed as boolean
+            if arg 2 is "true":
+                QweenSend(player,"Enabled &e%arg 1%")
+            else:
+                QweenSend(player,"Disabled &e%arg 1%")
+            
+command /qween-delete [<string>]:
+    permission: trigger
+    trigger:
+        if {qween.folder} is not set:
+            QweenSend(player,"You haven't set your Qween folder yet!")
+        if file "plugins/Skript/scripts/%{qween.folder}%/%arg 1%.sk" does not exist:
+            QweenSend(player,"File %{qween.folder}%/%arg 1% didnt exist")
+        else:
+            unload script file "%{qween.folder}%/%arg 1%.sk"
+            delete file "plugins/Skript/scripts/%{qween.folder}%/-%arg 1%.sk" 
+            QweenSend(player,"Deleted %{qween.folder}%/%arg 1%")
+        
+            
+
+command /qween-update [<string>]:
+    permission: admin 
+    trigger:
+        QweenSend(player, "Checking for Qween updates...")
+        grab the last 1 messages in channel with id "875288528974671942"
+        set {_msg} to first element of grabbed messages
+        set {_x} to "%attachment of {_msg}%"
+        set {_link} to attachment url of attachment of {_msg}
+        replace all "Qween" with "" in {_x}
+        replace all ".sk" with "" in {_x}
+        set {_x} to {_x} parsed as number
+        add reaction "star" to {_msg} with "Qween"
+        if {_x} is more than {qween.qweenversion}+0:
+            QweenSend(player, "updating Qween.sk &7v%{qween.qweenversion}% -> v%{_x}%")
+            set {qween.qweenversion} to {_x}
+            delete file "plugins/Skript/scripts/Qween.sk"
+            download file from {_link} to file "plugins/Skript/scripts/Qween.sk"
+            command "skript reload Qween"
+            QweenSend(player, "finished updating Qween.sk")
+        else:
+            QweenSend(player,"You are running the latest version of Qween.sk &7v%{_x}%")
+
+
+function QweenSend(p:player,m:string):
+    message "<##9E97FF>[Qween] &8| &f%{_m}%" to {_p}
+
+function QweenBroadcast(m:string):
+    broadcast "<##9E97FF>[Qween] &8| &f%{_m}%"
+
+command /sk [<string>]:
+    permission: admin
+    trigger:
+        set {_script} to arg 1
+        replace all "reload " with "" in {_script}
+
+        if {qween.packageversion::BetterErrors} is set:
+            set {_now} to now
+            command "skript reload %{_script}%"
+            message " &7Reloaded in %difference between now and {_now}%"
+            stop
+
+
+
+        if loaded scripts contains {_script}:
+            set {_now} to now
+            message " "
+            make player execute command "skript reload %{_script}%"
+            message " &7Reloaded in %difference between now and {_now}%"
+        else:
+            make player execute command "skript reload %{_script}%"
+
+on tab complete of "/sk":
+    set {_scripts::*} to loaded scripts 
+    loop {_scripts::*}:
+        if loop-value contains "Packages/":
+            remove loop-value from {_scripts::*}
+    set tab completions for position 1 to {_scripts::*}
+
+on tab complete of "/package-install":
+    set {_packages::*} to "VarManager","AdminWand","ItemMatic","RainbowUtils","BasicParticles","SilkyMenus","Offgrid","FunctionSet" and "MoreGameRules"
+    set tab completions for position 1 to {_packages::*}
