@@ -1,6 +1,8 @@
 #
-# For installing
-#
+# Qween!
+#  made by flowwave
+#  please do not claim ownership of Qween
+#  
 
 
 on load:
@@ -113,11 +115,15 @@ command /qween-update [<string>]:
 
         QweenSend(player, "Done...")
         
-function QweenSend(p:player,m:string):
-    message "<##9E97FF>[Qween] &8| &f%{_m}%" to {_p}
+command /qween [<string>]:
+    trigger:
+        if player is op:
+            QweenSend(player,"<tooltip:Click!><open url:https://discord.gg/yuZEp7vJ2n>The server is running Qween! Start installing packages with /package-install or join the discord by clicking &bhere")
+        else:
+            QweenSend(player,"<tooltip:Click!><open url:https://discord.gg/yuZEp7vJ2n>The server is running Qween (by flowwave)! You must be an operator on this server to anything with it though!")
 
-function QweenBroadcast(m:string):
-    broadcast "<##9E97FF>[Qween] &8| &f%{_m}%"
+function QweenSend(p:player,m:string):
+    send formatted "<##9E97FF>[Qween] &8| &f%{_m}%" to {_p}
 
 command /sk [<string>]:
     permission: admin
