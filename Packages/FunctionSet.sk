@@ -174,3 +174,13 @@ function CountdownActionbarSplit(list:string,minimum:number=0,max:number=100,str
         else:
             send action bar StringRepeatSplit({%{_list}%::%loop-index%}+0,{_max},{_stringBefore},{_stringAfter}) to loop-index parsed as offline player
     return {_return::*}
+
+# SHOULD BE USED VERY LITTLE
+function RunAt(loc:location,cmd:string):
+    command "execute positioned %x-pos of {_loc}% %y-pos of {_loc}% %z-pos of {_loc}% run %{_cmd}%"
+
+
+function Print(o:object):
+    loop all players:
+        if loop-player is op:
+            send formatted "&c[Print] &8| &f<suggest command:%{_o}%>%{_o}%" to all players
