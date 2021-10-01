@@ -16,6 +16,7 @@ on load:
     AddPackage("TreeGen")
     AddPackage("VarManager")
     AddPackage("FileCord")
+    AddPackage("BetterErrors")
     
     command "QweenUpdate"
     
