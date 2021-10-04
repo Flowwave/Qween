@@ -125,11 +125,11 @@ on inventory click:
         
         set {_m} to {menuOpen::%player%}
         cancel event
-
+        set {_player} to player
         set {_cmd} to nbt of clicked slot
         set {_run::*} to {_cmd} split at "<!RUN!>"
         set {_run} to {_run::2}
-        #broadcast {_run}
+        
         if {_run} contains "/":
             replace all "/" with "" in {_run}
             command {_run}
@@ -174,8 +174,8 @@ function menu_define(m:string):
 command /setcmd <string>:
     permission: admin
     trigger:
-        add "{runCmd:""<!CMD!>%arg 1%<!CMD!>""}" to nbt of player's held item
-        message "&eTip: use / for commands, use // for rightclick commands, use [player] for the player that clicked"
+        add "{runCmd:""<!RUN!>%arg 1%<!RUN!>""}" to nbt of player's held item
+        message "&eTip: use / for commands, without a / it will be seen as skript code"
 
 command /setcustomcase <string>:
     permission: admin
