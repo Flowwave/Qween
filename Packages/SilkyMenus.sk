@@ -32,7 +32,15 @@ command /sm [<string>] [<string>] [<string>]:
     permission: admin
     aliases: silkymenu, silky, menu
     trigger:
-        if arg 1 is "edit":
+        if arg 1 is "list":
+            if {menu.name::*} is not set:
+                SilkyError(player,"You haven't made any menus yet! &7Use /menu edit <menu id> to make one")
+                stop
+            SilkySet(player,"Here's all the menus!")
+            loop {menu.name::*}:
+                message "&7 Name: ""%loop-value%"" ID: %loop-index%"
+
+        if arg 1 is "edit" or "create":
             if arg 2 is set:
                 SilkySet(player,"Editing menu &b%arg 2%")
                 MenuEdit(player,arg 2)
@@ -82,7 +90,8 @@ command /sm [<string>] [<string>] [<string>]:
         
         message "&7 /sm edit <menu id>"
         message "&7 /sm open <menu id> (Opens a menu, for quick testing)"
-        message "&7 /openmenu <player> <menu id> (Opens a menu, use this everything!)"
+        message "&7 /sm list (Lists all menus)"
+        message "&7 /openmenu <player> <menu id> (Opens a menu to a certain player)"
         
         message "&7 /sm rows <menu id> <rows> (Change the number of rows of a menu)"
         message "&7 /sm name <menu id> <display name> (Change the display name of a menu)"
@@ -90,6 +99,15 @@ command /sm [<string>] [<string>] [<string>]:
         message "&7 /setcmd (Set the click command for an item)"
         message "&7 /setcustomcase (Set the custom case ID for an item)"
         
+
+on tab complete of "/menu":
+    set tab completions for position 1 to "edit","open","list","rows","name"
+    if event-string contains "list":
+        stop
+
+    loop {menu.name::*}:
+        add loop-index to {_completions::*}
+    set tab completions for position 2 to {_completions::*}
 
 command /openmenu <player> <string>:
     permission: admin 
@@ -148,7 +166,6 @@ function MenuEdit(p:player,m:string):
 
 
 function MenuOpen(p:player,m:string):
-
     menu_define({_m})
     if {menuOpen::%{_p}%} is not set:
         open_chest({_p} , {menu.name::%{_m}%}, {menu.rows::%{_m}%})
@@ -169,7 +186,7 @@ function menu_define(m:string):
     if {menu.name::%{_m}%} is not set:
         set {menu.rows::%{_m}%} to 3
         set {menu.name::%{_m}%} to {_m}
-    
+        
 
 command /setcmd <string>:
     permission: admin
