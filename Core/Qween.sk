@@ -51,6 +51,11 @@ command /package-uninstall [<string>]:
             QweenSend(player,"Uninstalled %{_pack}%!")
             delete {packagebyte::%{_pack}%}
         
+command /eval [<string>]:
+    permission: admin
+    trigger:
+        evaluate arg 1
+
 
 command /package-install [<string>]:
     permission: admin 
