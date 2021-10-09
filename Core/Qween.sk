@@ -16,7 +16,6 @@ on load:
     AddPackage("TreeGen")
     AddPackage("VarManager")
     AddPackage("FileCord")
-    AddPackage("BetterErrors")
     
     command "QweenUpdate"
     
@@ -27,8 +26,8 @@ command /package-list [<string>]:
     permission: admin
     trigger:
         QweenSend(player,"These are your installed packages:")
-        loop files in dir "plugins\Skript\scripts\Packages":
-            set {_x::*} to loop-value split at "\"
+        loop files in dir "plugins/Skript/scripts/Packages":
+            set {_x::*} to loop-value split at "/"
             set {_str} to last element of {_x::*}
             replace all ".sk" with "" in {_str}
             set {_pack} to {_str}
@@ -51,11 +50,6 @@ command /package-uninstall [<string>]:
             QweenSend(player,"Uninstalled %{_pack}%!")
             delete {packagebyte::%{_pack}%}
         
-command /eval [<string>]:
-    permission: admin
-    trigger:
-        evaluate arg 1
-
 
 command /package-install [<string>]:
     permission: admin 
