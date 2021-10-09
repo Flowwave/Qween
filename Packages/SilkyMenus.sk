@@ -28,9 +28,8 @@ function CustomCase(player:player,case:string,olditem:item,slot:number,count:num
 
 # An updated silkymenus!
 
-command /sm [<string>] [<string>] [<string>]:
+command /menu [<string>] [<string>] [<string>]:
     permission: admin
-    aliases: silkymenu, silky, menu
     trigger:
         if arg 1 is "list":
             if {menu.name::*} is not set:
@@ -53,7 +52,7 @@ command /sm [<string>] [<string>] [<string>]:
                 SilkySet(player,"Opening menu &b%arg 2%")
                 MenuOpen(player,arg 2)
                 stop
-            SilkyError(player,"Incorrect usage! &7/sm open <menu id>")
+            SilkyError(player,"Incorrect usage! &7/menu open <menu id>")
             stop
 
         if arg 1 is "rows":
@@ -66,9 +65,9 @@ command /sm [<string>] [<string>] [<string>]:
                         stop
                     SilkyError(player,"Not a valid number! Use 1 to 6!")
                     stop
-                SilkyError(player,"Incorrect usage! &7/sm rows <menu id> <rows>")
+                SilkyError(player,"Incorrect usage! &7/menu rows <menu id> <rows>")
                 stop
-            SilkyError(player,"Incorrect usage! &7/sm rows <menu id> <rows>")
+            SilkyError(player,"Incorrect usage! &7/menu rows <menu id> <rows>")
             stop
 
         if arg 1 is "name":
@@ -79,22 +78,22 @@ command /sm [<string>] [<string>] [<string>]:
                     SilkySet(player,"Menu display name set to %{_name}%!")
                     stop
                 
-                SilkyError(player,"Incorrect usage! &7/sm name <menu id> <display name>")
+                SilkyError(player,"Incorrect usage! &7/menu name <menu id> <display name>")
                 stop
-            SilkyError(player,"Incorrect usage! &7/sm name <menu id> <display name>")
+            SilkyError(player,"Incorrect usage! &7/menu name <menu id> <display name>")
             stop
 
         if arg 1 is set:
-            SilkyError(player,"Unknown sub-command, Use /sm for the list!")
+            SilkyError(player,"Unknown sub-command, Use /menu for the list!")
             stop
         
-        message "&7 /sm edit <menu id>"
-        message "&7 /sm open <menu id> (Opens a menu, for quick testing)"
-        message "&7 /sm list (Lists all menus)"
+        message "&7 /menu edit <menu id>"
+        message "&7 /menu open <menu id> (Opens a menu, for quick testing)"
+        message "&7 /menu list (Lists all menus)"
         message "&7 /openmenu <player> <menu id> (Opens a menu to a certain player)"
         
-        message "&7 /sm rows <menu id> <rows> (Change the number of rows of a menu)"
-        message "&7 /sm name <menu id> <display name> (Change the display name of a menu)"
+        message "&7 /menu rows <menu id> <rows> (Change the number of rows of a menu)"
+        message "&7 /menu name <menu id> <display name> (Change the display name of a menu)"
 
         message "&7 /setcmd (Set the click command for an item)"
         message "&7 /setcustomcase (Set the custom case ID for an item)"
