@@ -65,6 +65,6 @@ on command "sk":
                     else if {_mode} is "line":
                         set {_mode} to "none"
                         set {_line} to {_w}
-                
-                send formatted "<tooltip:%{_error}%>&c Line %{_line}% &8| &f%{_mainError}%" to player
-                add 1 to {_errorCount}
+                if {_line} is not -1:
+                    send formatted "<tooltip:%{_error}%>&c Line %{_line}% &8| &f%{_mainError}%" to player
+                    add 1 to {_errorCount}
