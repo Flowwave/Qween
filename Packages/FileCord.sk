@@ -83,6 +83,15 @@ on guild message received:
         else:
             add reaction "question" to event-message with event-bot
 
+command /filecord-upload <string>:
+    permission: admin
+    trigger:
+        if arg 1 is not set:
+            FileCordSend(player,"Error")
+            stop
+        upload "plugins/Skript/scripts/%{FileCord.folder}%/%arg 1%" to channel with discord id {filecord.channel}
+        FileCordSend(player,"Uploaded %arg 1%")
+        
 command /filecord-mark [<string>]:
     permission: admin 
     trigger:
