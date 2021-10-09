@@ -16,6 +16,7 @@ on load:
     AddPackage("TreeGen")
     AddPackage("VarManager")
     AddPackage("FileCord")
+    AddPackage("BetterErrors")
     
     command "QweenUpdate"
     
@@ -82,7 +83,7 @@ command /package-install [<string>]:
                 QweenSend(player,"Updating %{_pack}%...")
                 delete file "plugins/Skript/scripts/Packages/%{_pack}%.sk"
             else:
-                QweenSend(player,"Installing %{_x}%...")
+                QweenSend(player,"Installing %{_pack}%...")
         download file from {_link} to file "plugins/Skript/scripts/Packages/%{_pack}%.sk"
         set {packagebyte::%{_pack}%} to {_byte}
         
