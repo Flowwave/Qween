@@ -1,0 +1,61 @@
+#
+# Made by Endergamer_hun#3696
+#
+
+command /easyclicks [<string>] [<string>]:
+    trigger:
+        if arg-1 is set:
+            if arg-2 is set:
+                if lowercase arg-1 is "rc" or "rightclick":
+                    if player's tool isn't air:
+                        set {_nbt} to nbt compound of player's tool
+                        if arg-2 is ".":
+                            delete tag "tag;easyclicks;rightClick" of {_nbt}
+                            ECmessage("Successfully removed right click event!", player)
+                        else:
+                            set tag "tag;easyclicks;rightClick" of {_nbt} to arg-2
+                            ECmessage("Successfully set right click event to '&7%{_nbt}%&f'!", player)
+                        set player's tool to item from nbt {_nbt}
+                        stop
+                    ECmessage("&cYou need to be holding an item!", player)
+                    send ""
+                    stop
+                if lowercase arg-1 is "lc" or "leftclick":
+                    if player's tool isn't air:
+                        set {_nbt} to nbt compound of player's tool
+                        if arg-2 is ".":
+                            delete tag "tag;easyclicks;leftClick" of {_nbt}
+                            ECmessage("Successfully removed left click event!", player)
+                        else:
+                            set tag "tag;easyclicks;leftClick" of {_nbt} to arg-2
+                            ECmessage("Successfully set left click event to '&7%{_nbt}%&f'!", player)
+                        set player's tool to item from nbt {_nbt}
+                        stop
+                    ECmessage("&cYou need to be holding an item!", player)
+                    send ""
+                    stop
+        send ""
+        send "&d[&eEasyClicks&d] &bUsage: <suggest command:/easyclicks <rc|lc> <skript>><tooltip:Copy &6/easyclicks &2<&6rc&2|&6lc&2>&6 &2<&6skript&2>>&6/easyclicks &2<&6rc&2|&6lc&2>&6 &2<&6skript&2>"
+        ECmessage("Runs the code on &eright&f or &eleft click&f.", player)
+        ECmessage("Set <skript> to ""&e.&f"" to delete it.", player)
+        ECmessage("Start <skript> with ""&e/&f"" to run it as a command.", player)
+
+function ECmessage(m:string, p:player):
+    send "&d[&eEasyClicks&d]&r %{_m}%" to {_p}
+
+on right click:
+    set {_value} to tag "tag;easyclicks;rightClick" of nbt compound of player's tool
+    if {_value} starts with "/":
+        replace first "/" in {_value} with ""
+        command {_value}
+    else:
+        evaluate {_value}
+
+on left click:
+    set {_nbt} to nbt compound of player's tool
+    set {_value} to tag "tag;easyclicks;leftClick" of nbt compound of player's tool
+    if {_value} starts with "/":
+        replace first "/" in {_value} with ""
+        command {_value}
+    else:
+        evaluate {_value}
