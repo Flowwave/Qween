@@ -1,7 +1,10 @@
 
 on load:
     if list of addons does not contain "DiSKy" or "DiSKy*":
-        FileCordBroadcast("Warning! FileCord2 needs DiSKy to function!")
+        FileCordBroadcast("Warning! FileCord (v2) needs DiSKy to function!")
+	if list of addons contains "Vixio" or "Vixio*":
+	    broadcast "You could also install FileCordVixio to use the vixio version instead"
+	
     wait 2 seconds 
     if {FileCord.token} is not set:
         FileCordBroadcast("FileCord token is not set!")
