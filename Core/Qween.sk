@@ -16,6 +16,12 @@ on load:
     AddPackage("TreeGen")
     AddPackage("VarManager")
     AddPackage("FileCord")
+    AddPackage("FileCordVixio")
+    AddPackage("FileCordLocal")
+    AddPackage("BlueStoneX")
+    AddPackage("EasyClicks")
+    
+    
     AddPackage("BetterErrors")
     
     command "QweenUpdate"
