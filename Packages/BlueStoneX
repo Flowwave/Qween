@@ -1,0 +1,887 @@
+
+#
+# By Endergamer_hun#3696
+#
+
+aliases:
+    calcite = minecraft:calcite
+    waxed oxidized cut copper = minecraft:waxed_oxidized_cut_copper
+    waxed exposed cut coopper = minecraft:waxed_exposed_cut_copper
+    fire coral = minecraft:fire_coral
+    fire coral fan = minecraft:fire_coral_fan
+    fire coral wall fan = minecraft:fire_coral_wall_fan
+    tuff = minecraft:tuff
+    red candle = minecraft:red_candle
+    lime candle = minecraft:lime_candle
+
+on load:
+    set {BSXcommands::*} to "menu", "help", "getid", "getvar", "rename" and "eval"
+    send "&1[&9BlueStone&5&lX&1]&r &dLoad &8|&r Succesfully loaded BSX!" to all players
+
+#CANCEL
+on explode:
+    if event-entity is large fireball:
+        set {_loc} to event-entity's location
+        cancel event
+        play sound "entity.generic.explode" in block category at event-entity's location for all players
+        loop 3 times:
+            Particle({_loc}, explosion, 1, 0.5)
+            ParticleVector(BSXrndVec(5, 10))
+
+on block trample:
+    if BSXgetID(event-block) is set:
+        cancel event
+on fade:
+    if BSXgetID(event-block) is set:
+        cancel event
+#EVENTS
+on block break:
+    if BSXgetID(event-block) is set:
+        cancel drops
+    if BSXgetID(player's tool) is "TUNER":
+        if BSXgetID(event-block) is "MUSIC":
+            cancel event
+            if player's gamemode is creative:
+                set {_pitch} to tag "bsx;pitch" of nbt compound of event-block
+                set {_sound} to tag "bsx;sound" of nbt compound of event-block
+                play sound {_sound} in record category with pitch {_pitch} parsed as number at event-block's location for player
+        else if BSXgetID(event-block) contains "REPEATER":
+            cancel event
+            if player's gamemode is creative:
+                set {_delay} to tag "bsx;delay" of nbt compound of event-block
+                set {_cut} to tag "bsx;cut" of nbt compound of event-block
+                BSXmessage("&aInfo", "&2Delay: &a%{_delay}% ticks, &6Cutoff: &e%{_cut}% ticks", player)
+
+on left click:
+    if BSXgetID(player's tool) is "TUNER":
+        if BSXgetID(event-block) is "MUSIC":
+            cancel event
+            set {_pitch} to tag "bsx;pitch" of nbt compound of event-block
+            set {_sound} to tag "bsx;sound" of nbt compound of event-block
+            play sound {_sound} in record category with pitch {_pitch} parsed as number at event-block's location for player
+        else if BSXgetID(event-block) contains "REPEATER":
+            cancel event
+            if player's gamemode is creative:
+                set {_delay} to tag "bsx;delay" of nbt compound of event-block
+                set {_cut} to tag "bsx;cut" of nbt compound of event-block
+                BSXmessage("&aInfo", "&2Delay: &a%{_delay}% ticks, &6Cutoff: &e%{_cut}% ticks", player)
+on right click on lever:
+    if BSXgetID(block below event-block) is "BASE":
+        if tag "bsx;delay" of nbt compound of event-block isn't set:
+            set nbt block at event-block's location to event-block with nbt "{bsx:{id:""%BSXgetID(event-block)%"", delay:""1609455600""}}"
+        set {_delay} to tag "bsx;delay" of nbt compound of event-block
+        set {_time} to unix date of {_delay} parsed as number
+        set {_delay} to time since {_time}
+        if BSXgetID(event-block) is "LEVER":
+            if {_delay} is greater than 1.5 seconds:
+                set nbt block at event-block's location to event-block with nbt "{bsx:{id:""LEVER_ON"", delay:""%now's unix timestamp%""}}"
+                BSXpower(block below event-block, 20, event-block, true)
+                stop
+            BSXmessage("&5Wait", "&ePlease wait &6%difference between now and 1.5 seconds after {_time}%&e!", player)
+            cancel event
+        else if BSXgetID(event-block) is "LEVER_ON":
+            if {_delay} is greater than 0.8 seconds:
+                set nbt block at event-block's location to event-block with nbt "{bsx:{id:""LEVER"", delay:""%now's unix timestamp%""}}"
+                BSXpower(block below event-block, 20, event-block, false)
+                stop
+            BSXmessage("&5Wait", "&ePlease wait &6%difference between now and 0.8 second after {_time}%&e!", player)
+            cancel event
+on right click on stone button:
+    if BSXgetID(block below event-block) is "BASE":
+        if BSXgetID(event-block) is "BUTTON":
+            if tag "bsx;delay" of nbt compound of event-block isn't set:
+                set nbt block at event-block's location to event-block with nbt "{bsx:{id:""BUTTON"", delay:""1609455600""}}"
+            set {_delay} to tag "bsx;delay" of nbt compound of event-block
+            set {_time} to unix date of {_delay} parsed as number
+            set {_delay} to time since {_time}
+            if {_delay} is greater than 1.5 seconds:
+                set nbt block at event-block's location to event-block with nbt "{bsx:{id:""BUTTON_ON""}}"
+                BSXpower(block below event-block, 20, event-block, true)
+                wait 1.1 seconds
+                set nbt block at event-block's location to event-block with nbt "{bsx:{id:""BUTTON"", delay:""%now's unix timestamp%""}}"
+                BSXpower(block below event-block, 20, event-block, false)
+                stop
+            BSXmessage("&5Wait", "&ePlease wait &6%difference between now and 1.5 seconds after {_time}%&e!", player)
+            cancel event
+
+
+on right click on slime block:
+    if BSXgetID(event-block) is "PULSATOR":
+        BSXsphere(event-block's location, sneeze, event-player)
+on right click on redstone ore or redstone block:
+    if BSXgetID(event-block) is "WIRELESS_TRANSMITTER" or "WIRELESS_TRANSMITTER_ON":
+        cancel event
+        BSXsphere(event-block's location, heart, event-player)
+
+on block place:
+    if BSXgetID(player's tool) is set:
+        set {_id} to BSXgetID(player's tool)
+        if event-block is blue shulker box or light gray shulker box:
+            add nether star named "&0%{_id}%" to inventory of event-block
+        else if {_id} is "LAZER_BEAM":
+            loop all blocks in radius 1.4 around event-block:
+                if BSXgetID(loop-value) is "LAZER_BASE" or "LAZER_BASE_ON":
+                    set nbt block at event-block's location to event-block with nbt "{bsx:{id:""%{_id}%""}}"
+                    stop
+            BSXmessage("&cWarning", "&cYou need to place this next to a &dLazer Base&c!", player)
+        else if {_id} is "MUSIC":
+            set {_pitch} to tag "tag;bsx;pitch" of nbt compound of player's tool
+            set {_sound} to tag "tag;bsx;sound" of nbt compound of player's tool
+            set nbt block at event-block's location to event-block with nbt "{bsx:{id:""%{_id}%"",pitch:""%{_pitch}%"",sound:""%{_sound}%""}}"
+        else if {_id} is "REPEATER_ON" or "REPEATER_OFF":
+            set {_delay} to tag "tag;bsx;delay" of nbt compound of player's tool
+            set {_cut} to tag "tag;bsx;cut" of nbt compound of player's tool
+            if {_delay} isn't set:
+                set {_delay} to 5
+            if {_cut} isn't set:
+                set {_cut} to 1
+            set nbt block at event-block's location to event-block with nbt "{bsx:{id:""%{_id}%"",delay:""%{_delay}%"",cut:""%{_cut}%""}}"
+        else if {_id} is "TUNER":
+            cancel event
+        else:
+            set nbt block at event-block's location to event-block with nbt "{bsx:{id:""%{_id}%""}}"
+    else if event-block is blue terracotta or tuff:
+        set {_list::*} to "BASE", "CABLE_OFF", "CABLE_ON", "REPEATER_OFF", "REPEATER_ON", "LAZER_RECIEVER", "LAZER_RECIEVER_ON", "WIRELESS_RECIEVER" and "WIRELESS_RECIEVER_ON"
+        loop all blocks in radius 1.4 around event-block:
+            if {_list::*} contains BSXgetID(loop-value):
+                BSXmessage("&cWarning", "&cThis is not a component!", player)
+                loop 5 times:
+                    Particle(event-block's location, angry_villager, 3)
+                    ParticleVector(BSXrndVec(5,10))
+
+#INVENTORY
+on right click on tuff or andesite:
+    if BSXgetID(event-block) contains "REPEATER":
+        if BSXgetID(player's tool) is "TUNER":
+            if {BSXopenMenu::*} contains player:
+                stop
+            set {_delay} to tag "bsx;delay" of nbt compound of event-block
+            set {_cut} to tag "bsx;cut" of nbt compound of event-block
+            set {BSXtuning::%player%} to event-block
+            add player to {BSXopenMenu::*}
+            open chest with 5 rows named "&9Repeater" to player
+
+            BSXsetRepeaterSlot(13, slime ball, "&2Delay: &a%{_delay}% ticks", "Click to reset", 0, player)
+            BSXsetRepeaterSlot(31, shears, "&6Cutoff: &e%{_cut}% ticks", "Click to reset", 0, player)
+
+            BSXsetRepeaterSlot(10, red wool, "&cDecrease by 20 ticks &7(1 second)", "Decreases delay", -20, player)
+            BSXsetRepeaterSlot(11, red candle, "&cDecrease by 5 ticks", "Decreases delay", -5, player)
+            BSXsetRepeaterSlot(12, red dye, "&cDecrease by 1 tick", "Decreases delay", -1, player)
+
+            BSXsetRepeaterSlot(16, lime wool, "&aIncrease by 20 ticks &7(1 second)", "Increases delay", 20, player)
+            BSXsetRepeaterSlot(15, lime candle, "&aIncrease by 5 ticks", "Increases delay", 5, player)
+            BSXsetRepeaterSlot(14, lime dye, "&aIncrease by 1 tick", "Increases delay", 1, player)
+
+            BSXsetRepeaterSlot(28, red wool, "&cDecrease by 20 ticks &7(1 second)", "Decreases cutoff", -20, player)
+            BSXsetRepeaterSlot(29, red candle, "&cDecrease by 5 ticks", "Decreases cutoff", -5, player)
+            BSXsetRepeaterSlot(30, red dye, "&cDecrease by 1 tick", "Decreases cutoff", -1, player)
+
+            BSXsetRepeaterSlot(34, lime wool, "&aIncrease by 20 ticks &7(1 second)", "Increases cutoff", 20, player)
+            BSXsetRepeaterSlot(33, lime candle, "&aIncrease by 5 ticks", "Increases cutoff", 5, player)
+            BSXsetRepeaterSlot(32, lime dye, "&aIncrease by 1 tick", "Increases cutoff", 1, player)
+        else if BSXgetID(player's tool) contains "REPEATER":
+            if player is sneaking:
+                set {_nbt} to nbt compound of player's tool
+                set {_delay} to tag "bsx;pitch" of nbt compound of event-block
+                set {_cut} to tag "bsx;sound" of nbt compound of event-block
+                set tag "tag;bsx;delay" of {_nbt} to {_delay}
+                set tag "tag;bsx;cut" of {_nbt} to {_cut}
+                set player's tool to item from nbt {_nbt}
+                BSXmessage("&9Repeater", "Copied &9Repeater&f settings.", player)
+                BSXmessage("&9Repeater", "&2Delay: &a%{_delay}% &6Cut: &e%{_cut}%", player)
+
+function BSXsetRepeaterSlot(s:int, i:item, n:string, l:string, a:int, p:player):
+    set {_i} to {_i} with all flags hidden
+    set {_i}'s name to {_n}
+    paint {_i} {_c}
+    set lore of {_i} to "&f| &7%{_l}%"
+    set {_nbt} to nbt compound of {_i}
+    set tag "tag;bsx;amount" of {_nbt} to {_a}
+    set slot {_s} of {_p}'s current inventory to item from nbt {_nbt}
+
+on right click on note block:
+    if BSXgetID(event-block) is "MUSIC":
+        cancel event
+        if BSXgetID(player's tool) is "TUNER":
+            if {BSXopenMenu::*} contains player:
+                stop
+            set {_pitch} to tag "bsx;pitch" of nbt compound of event-block
+            set {_sound} to tag "bsx;sound" of nbt compound of event-block
+            replace first "block.note_block." with "" in {_sound}
+            set {BSXtuning::%player%} to event-block
+            add player to {BSXopenMenu::*}
+            open chest with 6 rows named "&5Music Block" to player
+
+            BSXsetMusicSlot(30, slime ball, "&6Currently pitch:", "&e%{_pitch}%", 0, rgb(0,0,0), player)
+            BSXsetMusicSlot(31, note block, "&6Preview", "&a%{_sound}% &7at &e%{_pitch}% &7pitch", 0, rgb(0,0,0), player)
+            BSXsetMusicSlot(32, ender eye, "&6Currently sound:", "&a%{_sound}%", 0, rgb(0,0,0), player)
+
+            BSXsetMusicSlot(18, leather chestplate, "&60 &7(F&o##&7)", "&eRight Click &7to preview", 0, rgb(119, 215, 0), player)
+            BSXsetMusicSlot(19, leather chestplate, "&61 &7(G)", "&eRight Click &7to preview", 1, rgb(149, 192, 0), player)
+            BSXsetMusicSlot(20, leather chestplate, "&62 &7(G&o##&7)", "&eRight Click &7to preview", 2, rgb(178, 165, 0), player)
+            BSXsetMusicSlot(21, leather chestplate, "&63 &7(A)", "&eRight Click &7to preview", 3, rgb(204, 134, 0), player)
+            BSXsetMusicSlot(22, leather chestplate, "&64 &7(A&o##&7)", "&eRight Click &7to preview", 4, rgb(226, 101, 0), player)
+            BSXsetMusicSlot(23, leather chestplate, "&65 &7(B)", "&eRight Click &7to preview", 5, rgb(243, 65, 0), player)
+            BSXsetMusicSlot(24, leather chestplate, "&66 &7(C)", "&eRight Click &7to preview", 6, rgb(252, 30, 0), player)
+            BSXsetMusicSlot(25, leather chestplate, "&67 &7(C&o##&7)", "&eRight Click &7to preview", 7, rgb(254, 0, 15), player)
+
+            BSXsetMusicSlot(9, leather chestplate, "&68 &7(D)", "&eRight Click &7to preview", 8, rgb(247, 0, 51), player)
+            BSXsetMusicSlot(10, leather chestplate, "&69 &7(D&o##&7)", "&eRight Click &7to preview", 9, rgb(232, 0, 90), player)
+            BSXsetMusicSlot(11, leather chestplate, "&610 &7(E)", "&eRight Click &7to preview", 10, rgb(207, 0, 131), player)
+            BSXsetMusicSlot(12, leather chestplate, "&611 &7(F)", "&eRight Click &7to preview", 11, rgb(174, 0, 169), player)
+            BSXsetMusicSlot(13, leather chestplate, "&612 &7(F&o##&7)", "&eRight Click &7to preview", 12, rgb(134, 0, 204), player)
+            BSXsetMusicSlot(14, leather chestplate, "&613 &7(G)", "&eRight Click &7to preview", 13, rgb(91, 0, 231), player)
+            BSXsetMusicSlot(15, leather chestplate, "&614 &7(G&o##&7)", "&eRight Click &7to preview", 14, rgb(45, 0, 249), player)
+            BSXsetMusicSlot(16, leather chestplate, "&615 &7(A)", "&eRight Click &7to preview", 15, rgb(2, 10, 254), player)
+            BSXsetMusicSlot(17, leather chestplate, "&616 &7(A&o##&7)", "&eRight Click &7to preview", 16, rgb(0, 55, 246), player)
+
+            BSXsetMusicSlot(1, leather chestplate, "&617 &7(B)", "&eRight Click &7to preview", 17, rgb(0, 104, 224), player)
+            BSXsetMusicSlot(2, leather chestplate, "&618 &7(C)", "&eRight Click &7to preview", 18, rgb(0, 154, 188), player)
+            BSXsetMusicSlot(3, leather chestplate, "&619 &7(C&o##&7)", "&eRight Click &7to preview", 19, rgb(0, 198, 141), player)
+            BSXsetMusicSlot(4, leather chestplate, "&620 &7(D)", "&eRight Click &7to preview", 20, rgb(0, 233, 88), player)
+            BSXsetMusicSlot(5, leather chestplate, "&621 &7(D&o##&7)", "&eRight Click &7to preview", 21, rgb(0, 252, 33), player)
+            BSXsetMusicSlot(6, leather chestplate, "&622 &7(E)", "&eRight Click &7to preview", 22, rgb(31, 252, 0), player)
+            BSXsetMusicSlot(7, leather chestplate, "&623 &7(F)", "&eRight Click &7to preview", 23, rgb(89, 232, 0), player)
+            BSXsetMusicSlot(8, leather chestplate, "&624 &7(F&o##&7)", "&eRight Click &7to preview", 24, rgb(148, 193, 0), player)
+
+            BSXsetMusicSlot(45, grass block, "&6Harp &a/&6 Piano", "&eRight Click &7to preview", "block.note_block.harp", rgb(0,0,0), player)
+            BSXsetMusicSlot(46, glowstone, "&6Pling", "&eRight Click &7to preview", "block.note_block.pling", rgb(0,0,0), player)
+            BSXsetMusicSlot(47, hay bale, "&6Banjo", "&eRight Click &7to preview", "block.note_block.banjo", rgb(0,0,0), player)
+            BSXsetMusicSlot(48, emerald block, "&6Bit &a(&6Square Wave&a)", "&eRight Click &7to preview", "block.note_block.bit", rgb(0,0,0), player)
+            BSXsetMusicSlot(49, pumpkin, "&6Didgeridoo", "&eRight Click &7to preview", "block.note_block.didgeridoo", rgb(0,0,0), player)
+            BSXsetMusicSlot(50, soul sand, "&6Cow Bell", "&eRight Click &7to preview", "block.note_block.cow_bell", rgb(0,0,0), player)
+            BSXsetMusicSlot(51, iron block, "&6Iron Xylophone", "&eRight Click &7to preview", "block.note_block.iron_xylophone", rgb(0,0,0), player)
+            BSXsetMusicSlot(52, bone block, "&6Xylophone", "&eRight Click &7to preview", "block.note_block.xylophone", rgb(0,0,0), player)
+
+            BSXsetMusicSlot(37, red wool, "&6Guitar", "&eRight Click &7to preview", "block.note_block.guitar", rgb(0,0,0), player)
+            BSXsetMusicSlot(38, packed ice, "&6Chimes", "&eRight Click &7to preview", "block.note_block.chime", rgb(0,0,0), player)
+            BSXsetMusicSlot(39, honeycomb block, "&6Flute", "&eRight Click &7to preview", "block.note_block.flute", rgb(0,0,0), player)
+            BSXsetMusicSlot(40, gold block, "&6Bells", "&eRight Click &7to preview", "block.note_block.bell", rgb(0,0,0), player)
+            BSXsetMusicSlot(41, quartz block, "&6Bass Drum", "&eRight Click &7to preview", "block.note_block.basedrum", rgb(0,0,0), player)
+            BSXsetMusicSlot(42, glass, "&6Clicks and Sticks &a(&6Hihat&a)", "&eRight Click &7to preview", "block.note_block.hat", rgb(0,0,0), player)
+            BSXsetMusicSlot(43, sand, "&6Snare Drum", "&eRight Click &7to preview", "block.note_block.snare", rgb(0,0,0), player)
+            BSXsetMusicSlot(44, oak log, "&6Bass &a(&6String Bass&a)", "&eRight Click &7to preview", "block.note_block.bass", rgb(0,0,0), player)
+        if BSXgetID(player's tool) is "MUSIC":
+            if player is sneaking:
+                set {_nbt} to nbt compound of player's tool
+                set {_pitch} to tag "bsx;pitch" of nbt compound of event-block
+                set {_sound} to tag "bsx;sound" of nbt compound of event-block
+                set tag "tag;bsx;pitch" of {_nbt} to {_pitch}
+                set tag "tag;bsx;sound" of {_nbt} to {_sound}
+                set player's tool to item from nbt {_nbt}
+                BSXmessage("&5Music Block", "Copied &5Music Block&f settings.", player)
+                BSXmessage("&5Music Block", "&2Sound: &a%{_sound}% &6Pitch: &e%{_pitch}%", player)
+
+function BSXsetMusicSlot(s:int, i:item, n:string, l:string, t:object, c:colour, p:player):
+    set {_i} to {_i} with all flags hidden
+    set {_i}'s name to {_n}
+    paint {_i} {_c}
+    set lore of {_i} to "&f| &7%{_l}%"
+    set {_nbt} to nbt compound of {_i}
+    if {_i} isn't note block, ender eye or slime ball:
+        if {_t} is a number:
+            set tag "tag;bsx;pitch" of {_nbt} to {_t}
+        else:
+            set tag "tag;bsx;sound" of {_nbt} to {_t}
+    set slot {_s} of {_p}'s current inventory to item from nbt {_nbt}
+
+on right click with nether star:
+    if BSXgetID(player's tool) is "MENU":
+        BSXmenu(player)
+on inventory click:
+    if {BSXopenMenu::*} contains player:
+        cancel event
+        if inv name of event-inventory is "&6Components":
+            if event-item is set:
+                if event-item isn't barrier:
+                    if player's inventory contains event-item:
+                        Sound(player, "block.stone_button.click_off")
+                        stop
+                    Sound(player)
+                    give event-item to players
+        else if inv name of event-inventory is "&5Music Block":
+            set {_pitch} to tag "bsx;pitch" of nbt compound of {BSXtuning::%player%}
+            set {_sound} to tag "bsx;sound" of nbt compound of {BSXtuning::%player%}
+            if event-item is note block:
+                play sound {_sound} in record category with pitch {_pitch} parsed as number at {BSXtuning::%player%}'s location for player
+                stop
+            if "%event-clicktype%" contains "right mouse":
+                if tag "tag;bsx;pitch" of nbt compound of event-item is set:
+                    set {_pitch} to tag "tag;bsx;pitch" of nbt compound of event-item
+                    set {_pitch} to 2^(({_pitch}-12)/12)
+                    play sound {_sound} in record category with pitch {_pitch} at {BSXtuning::%player%}'s location for player
+                else if tag "tag;bsx;sound" of nbt compound of event-item is set:
+                    set {_sound} to tag "tag;bsx;sound" of nbt compound of event-item
+                    play sound {_sound} in record category with pitch {_pitch} parsed as number at {BSXtuning::%player%}'s location for player
+            else if "%event-clicktype%" contains "left mouse":
+                if tag "tag;bsx;pitch" of nbt compound of event-item is set:
+                    set {_pitch} to tag "tag;bsx;pitch" of nbt compound of event-item
+                    set {_pitch} to 2^(({_pitch}-12)/12)
+                    play sound {_sound} in record category with pitch {_pitch} at {BSXtuning::%player%}'s location for player
+                    set nbt block at {BSXtuning::%player%}'s location to {BSXtuning::%player%} with nbt "{bsx:{id:""MUSIC"", pitch:""%{_pitch}%"", sound:""%{_sound}%""}}"
+                    replace first "block.note_block." with "" in {_sound}
+                    BSXsetMusicSlot(30, slime ball, "&6Currently pitch:", "&e%{_pitch}%", 0, rgb(0,0,0), player)
+                    BSXsetMusicSlot(31, note block, "&6Preview", "&a%{_sound}% &7at &e%{_pitch}% &7pitch", 0, rgb(0,0,0), player)
+                    BSXmessage("&5Music Block", "Updated music block", player)
+                else if tag "tag;bsx;sound" of nbt compound of event-item is set:
+                    set {_sound} to tag "tag;bsx;sound" of nbt compound of event-item
+                    play sound {_sound} in record category with pitch {_pitch} parsed as number at {BSXtuning::%player%}'s location for player
+                    set nbt block at {BSXtuning::%player%}'s location to {BSXtuning::%player%} with nbt "{bsx:{id:""MUSIC"", pitch:""%{_pitch}%"", sound:""%{_sound}%""}}"
+                    replace first "block.note_block." with "" in {_sound}
+                    BSXsetMusicSlot(32, ender eye, "&6Currently sound:", "&a%{_sound}%", 0, rgb(0,0,0), player)
+                    BSXsetMusicSlot(31, note block, "&6Preview", "&a%{_sound}% &7at &e%{_pitch}% &7pitch", 0, rgb(0,0,0), player)
+                    BSXmessage("&5Music Block", "Updated music block", player)
+        else if inv name of event-inventory is "&9Repeater":
+            set {_id} to tag "bsx;id" of nbt compound of {BSXtuning::%player%}
+            set {_delay} to tag "bsx;delay" of nbt compound of {BSXtuning::%player%}
+            set {_cut} to tag "bsx;cut" of nbt compound of {BSXtuning::%player%}
+            set {_delay} to {_delay} parsed as int
+            set {_cut} to {_cut} parsed as int
+            set {_amount} to tag "tag;bsx;amount" of nbt compound of event-item
+            if {_amount} is set:
+                set {_amount} to {_amount} parsed as int
+                if event-slot's index is greater than 22:
+                    if {_amount} is 0:
+                        set {_cut} to 0
+                        play sound "minecraft:block.wool.fall" in player category for player
+                    else:
+                        add {_amount} to {_cut}
+                        if {_amount} is greater than 0:
+                            play sound "minecraft:block.note_block.bit" in player category for player
+                        else:
+                            if {_cut} is less than 0:
+                                set {_cut} to 0
+                            play sound "minecraft:block.note_block.didgeridoo" in player category for player
+                    BSXsetRepeaterSlot(31, shears, "&6Cutoff: &e%{_cut}% ticks", "Click to reset", 0, player)
+                    set nbt block at {BSXtuning::%player%}'s location to {BSXtuning::%player%} with nbt "{bsx:{id:""%{_id}%"", delay:""%{_delay}%"", cut:""%{_cut}%""}}"
+                else:
+                    if {_amount} is 0:
+                        set {_delay} to 0
+                        play sound "minecraft:block.wool.fall" in player category for player
+                    else:
+                        add {_amount} to {_delay}
+                        if {_amount} is greater than 0:
+                            play sound "minecraft:block.note_block.bit" in player category for player
+                        else:
+                            if {_delay} is less than 0:
+                                set {_delay} to 0
+                            play sound "minecraft:block.note_block.didgeridoo" in player category for player
+                    BSXsetRepeaterSlot(13, slime ball, "&2Delay: &a%{_delay}% ticks", "Click to reset", 0, player)
+                    set nbt block at {BSXtuning::%player%}'s location to {BSXtuning::%player%} with nbt "{bsx:{id:""%{_id}%"", delay:""%{_delay}%"", cut:""%{_cut}%""}}"
+
+on inventory close:
+    if {BSXopenMenu::*} contains player:
+        remove player from {BSXopenMenu::*}
+        delete {BSXtuning::%player%}
+
+on quit:
+    if {BSXopenMenu::*} contains player:
+        remove player from {BSXopenMenu::*}
+        delete {BSXtuning::%player%}
+
+function BSXmenu(p:player):
+    if {BSXopenMenu::*} contains {_p}:
+        stop
+    add {_p} to {BSXopenMenu::*}
+    open chest with 6 rows named "&6Components" to {_p}
+
+    BSXsetSlot(53, nether star, "&6Component Menu", "", "MENU", {_p})
+    BSXsetSlot(44, bamboo, "&bThe Tuner", "&eRight Click&7:&a Edit||&eLeft Click&7:&a Preview", "TUNER", {_p})
+
+    BSXsetSlot(0, calcite, "&dLazer Base &f(&cOff&f)", "Sends out lazers from adjacent &dLazer Beams", "LAZER_BASE", {_p})
+    BSXsetSlot(1, chiseled quartz block, "&dLazer Base &f(&aOn&f)", "", "LAZER_BASE_ON", {_p})
+    BSXsetSlot(2, end rod, "&dLazer Beam", "This needs to be next to a &dLazer Base&7.", "LAZER_BEAM", {_p})
+    BSXsetSlot(9, waxed exposed cut coopper, "&dLazer Reciever &f(&cOff&f)", "", "LAZER_RECIEVER", {_p})
+    BSXsetSlot(10, waxed oxidized cut copper, "&dLazer Reciever &f(&aOn&f)", "", "LAZER_RECIEVER", {_p})
+
+    BSXsetSlot(7, blackstone, "&8Base", "Place inputs &6on top of&7 this block!", "BASE", {_p})
+    BSXsetSlot(8, lever, "&eLever", "Place this &6on top of&7 the &eBase.", "LEVER", {_p})
+    BSXsetSlot(17, stone button, "&eButton", "Place this &6on top of&7 the &eBase.", "BUTTON", {_p})
+
+    BSXsetSlot(4, slime block, "&2Pulsator Block", "Range: &65||On: &dPush||Off: &aPull", "PULSATOR", {_p})
+    BSXsetSlot(5, note block, "&5Music Block", "&eShift Right Click&7: &aCopy settings||Use &bThe Tuner&7 to &eedit", "MUSIC", {_p})
+    BSXsetSlot(13, fire coral fan, "&4Fireball Launcher", "", "FIREBALL", {_p})
+    BSXsetSlot(14, fire coral, "&4Firework Launcher", "", "FIREWORK", {_p})
+
+    BSXsetSlot(36, red nether brick wall, "&4Wireless Reciever &f(&cOff&f)", "", "WIRELESS_RECIEVER", {_p})
+    BSXsetSlot(37, prismarine wall, "&4Wireless Reciever &f(&aOn&f)", "", "WIRELESS_RECIEVER_ON", {_p})
+    BSXsetSlot(45, redstone ore, "&4Wireless Transmitter &f(&cOff&f)", "Range: &65", "WIRELESS_TRANSMITTER", {_p})
+    BSXsetSlot(46, redstone block, "&4Wireless Transmitter &f(&aOn&f)", "Range: &65", "WIRELESS_TRANSMITTER_ON", {_p})
+
+    BSXsetSlot(48, blue terracotta, "&9Cable &f(&cOff&f)", "", "CABLE_OFF", {_p})
+    BSXsetSlot(49, light blue terracotta, "&9Cable &f(&aOn&f)", "", "CABLE_ON", {_p})
+    BSXsetSlot(39, blue shulker box, "&9One Way Gate &f(&cOff&f)", "", "ONE_WAY_GATE_OFF", {_p})
+    BSXsetSlot(40, light gray shulker box, "&9One Way Gate &f(&aOn&f)", "", "ONE_WAY_GATE_ON", {_p})
+    BSXsetSlot(30, tuff, "&9Repeater &f(&cOff&f)", "&2Delay&7 and &2Cut&7 signals||&eShift Right Click&7: &aCopy settings||Use &bThe Tuner&7 to &eedit", "REPEATER_OFF", {_p})
+    BSXsetSlot(31, andesite, "&9Repeater &f(&aOn&f)", "&2Delay&7 and &2Cut&7 signals||&eShift Right Click&7: &aCopy settings||Use &bThe Tuner&7 to &eedit", "REPEATER_ON", {_p})
+    BSXsetSlot(41, loom, "&9OR Gate", "", "GATE_OR", {_p})
+    BSXsetSlot(50, purpur pillar, "&9NOT Gate", "", "GATE_NOT", {_p})
+
+function BSXsetSlot(s:int, i:item, n:string, l:string, id:string, p:player):
+    set {_i}'s name to {_n}
+    if {_l} isn't "":
+        set {_lore::*} to {_l} split at "||"
+        loop {_lore::*}:
+            set {_line} to loop-index parsed as number
+            set line {_line} of lore of {_i} to "&f| &7%loop-value%"
+    set {_nbt} to nbt compound of {_i}
+    set tag "tag;bsx;id" of {_nbt} to {_id}
+    set slot {_s} of {_p}'s current inventory to item from nbt {_nbt}
+
+#POWER
+function BSXpower(self:block, distance:int, caller:block, state:boolean):
+    if {_distance} is greater than 0:
+        wait 1 tick
+        set {_sides::*} to all blocks in radius 1.4 around {_self}'s location
+        set {_id} to BSXgetID({_self})
+        remove {_self} from {_sides::*}
+        remove 1 from {_distance}
+        BSXdebug("%{_distance}%: %{_id}%")
+        #Inputs
+        if {_id} is "BASE":
+            loop {_sides::*}:
+                if BSXgetID(loop-value) is set:
+                    BSXpower(loop-value, {_distance}, {_self}, {_state})
+        else if {_id} is "LEVER" or "LEVER_ON":
+            stop
+        else if {_id} is "BUTTON" or "BUTTON_ON":
+            stop
+        #Cables
+        else if {_id} is "CABLE_OFF":
+            if {_state} is true:
+                set nbt block at {_self}'s location to light blue terracotta with nbt "{bsx:{id:""CABLE_ON""}}"
+                remove {_caller} from {_sides::*}
+                loop {_sides::*}:
+                    if BSXgetID(loop-value) is set:
+                        if BSXgetID(loop-value) isn't "CABLE_ON":
+                            BSXpower(loop-value, {_distance}, {_self}, {_state})
+        else if {_id} is "CABLE_ON":
+            if {_state} is false:
+                set nbt block at {_self}'s location to blue terracotta with nbt "{bsx:{id:""CABLE_OFF""}}"
+                remove {_caller} from {_sides::*}
+                loop {_sides::*}:
+                    if BSXgetID(loop-value) is set:
+                        if BSXgetID(loop-value) isn't "CABLE_OFF":
+                            BSXpower(loop-value, {_distance}, {_self}, {_state})
+        #Fancy stuff
+        else if {_id} is "FIREBALL":
+            if {_state} is true:
+                set {_test} to block below {_self}
+                set {_loc} to {_self}'s location
+                set yaw of {_loc} to 0
+                set pitch of {_loc} to -90
+                if {_self}'s facing is set:
+                    set {_test} to BSXback({_self}'s location, {_self}'s facing)
+                    set yaw of {_loc} to BSXyawOf({_self}'s facing)
+                    set pitch of {_loc} to BSXpitchOf({_self}'s facing)
+                if {_caller}'s location is {_test}'s location:
+                    spawn fireball at {_loc}
+        else if {_id} is "FIREWORK":
+            if {_state} is true:
+                if {_caller}'s location is location of block below {_self}:
+                    launch ball coloured blue and yellow fading to red and green at {_self}'s location with power 0.8
+        else if {_id} is "PULSATOR":
+            loop all players:
+                set {_v} to vector from {_self}'s location to loop-player
+                if vector length of {_v} is smaller than 5:
+                    if {_state} is true:
+                        set vector length of {_v} to (5-vector length of {_v})/4
+                    else:
+                        set {_v} to {_v} ** vector(-0.25, -0.25, -0.25)
+                    push loop-player {_v}
+        else if {_id} is "MUSIC":
+            if {_state} is true:
+                set {_pitch} to tag "bsx;pitch" of nbt compound of {_self}
+                set {_sound} to tag "bsx;sound" of nbt compound of {_self}
+                play sound {_sound} in record category with pitch {_pitch} parsed as number at {_self}'s location
+
+        #Wireless
+        else if {_id} is "WIRELESS_TRANSMITTER":
+            if {_state} is true:
+                set nbt block at {_self}'s location to redstone block with nbt "{bsx:{id:""WIRELESS_TRANSMITTER_ON""}}"
+                loop 10 times:
+                    Particle({_self}'s location, angry_villager)
+                    ParticleVector(BSXrndVec(8, 10))
+                loop all blocks in radius 5 around {_self}'s location:
+                    if BSXgetID(loop-value) is "WIRELESS_RECIEVER":
+                        BSXpower(loop-value, {_distance}, {_self}, {_state})
+                        BSXradio({_self},loop-value, {_state})
+        else if {_id} is "WIRELESS_TRANSMITTER_ON":
+            if {_state} is false:
+                set nbt block at {_self}'s location to redstone ore with nbt "{bsx:{id:""WIRELESS_TRANSMITTER""}}"
+                loop all blocks in radius 5 around {_self}'s location:
+                    if BSXgetID(loop-value) is "WIRELESS_RECIEVER_ON":
+                        BSXpower(loop-value, {_distance}, {_self}, {_state})
+                        BSXradio(loop-value,{_self}, {_state})
+        
+        else if {_id} is "WIRELESS_RECIEVER":
+            if {_state} is true:
+                set nbt block at {_self}'s location to prismarine wall with nbt "{bsx:{id:""WIRELESS_RECIEVER_ON""}}"
+                loop {_sides::*}:
+                    if BSXgetID(loop-value) is set:
+                        BSXpower(loop-value, {_distance}, {_self}, {_state})
+        else if {_id} is "WIRELESS_RECIEVER_ON":
+            if {_state} is false:
+                set nbt block at {_self}'s location to red nether brick wall with nbt "{bsx:{id:""WIRELESS_RECIEVER""}}"
+                loop {_sides::*}:
+                    if BSXgetID(loop-value) is set:
+                        BSXpower(loop-value, {_distance}, {_self}, {_state})
+
+        #Lazer
+        else if {_id} is "LAZER_BEAM":
+            stop
+        else if {_id} is "LAZER_BASE":
+            if {_state} is true:
+                set nbt block at {_self}'s location to chiseled quartz block with nbt "{bsx:{id:""LAZER_BASE_ON""}}"
+                loop {_sides::*}:
+                    if BSXgetID(loop-value) is "LAZER_BEAM":
+                        BSXshoot(loop-value's location, loop-value's facing, {_state}, 10)
+        else if {_id} is "LAZER_BASE_ON":
+            if {_state} is false:
+                set nbt block at {_self}'s location to calcite with nbt "{bsx:{id:""LAZER_BASE""}}"
+                loop {_sides::*}:
+                    if BSXgetID(loop-value) is "LAZER_BEAM":
+                        BSXshoot(loop-value's location, loop-value's facing, {_state}, 10)
+
+        else if {_id} is "LAZER_RECIEVER" or "LAZER_RECIEVER_ON":
+            if {_state} is true:
+                set nbt block at {_self}'s location to waxed oxidized cut copper with nbt "{bsx:{id:""LAZER_RECIEVER_ON""}}"
+            else:
+                set nbt block at {_self}'s location to waxed exposed cut copper with nbt "{bsx:{id:""LAZER_RECIEVER""}}"
+            loop {_sides::*}:
+                if BSXgetID(loop-value) is set:
+                    BSXpower(loop-value, {_distance}, {_self}, {_state})
+
+        #Logic Gates
+        else if {_id} is "GATE_OR":
+            if {_state} is true:
+                BSXpower(block {_self}'s facing {_self}'s location, {_distance}, {_self}, true)
+            else:
+                remove block {_self}'s facing {_self}'s location from {_sides::*}
+                remove {_caller} from {_sides::*}
+                set {_trigger} to false
+                loop {_sides::*}:
+                    if BSXgetID(loop-value) is "CABLE_ON":
+                        set {_trigger} to true
+                if {_trigger} is true:
+                    BSXpower(block {_self}'s facing {_self}'s location, {_distance}, {_self}, true)
+                else:
+                    BSXpower(block {_self}'s facing {_self}'s location, {_distance}, {_self}, false)
+        else if {_id} is "GATE_NOT":
+            if "%{_self}%" contains "east-west":
+                set {_locs::*} to location of block east of {_self} and location of block west of {_self}
+                if {_locs::*} contains {_caller}'s location:
+                    set {_dir} to vector from {_caller} to {_self}
+                    if BSXgetID(block {_dir} {_self}) is set:
+                        BSXpower(block {_dir} {_self}, {_distance}, {_self}, BSXflip({_state}))
+            else if "%{_self}%" contains "z-aligned":
+                set {_locs::*} to location of block south of {_self} and location of block north of {_self}
+                if {_locs::*} contains {_caller}'s location:
+                    set {_dir} to vector from {_caller} to {_self}
+                    if BSXgetID(block {_dir} {_self}) is set:
+                        BSXpower(block {_dir} {_self}, {_distance}, {_self}, BSXflip({_state}))
+            else:
+                set {_locs::*} to location of block above {_self} and location of block below {_self}
+                if {_locs::*} contains {_caller}'s location:
+                    set {_dir} to vector from {_caller} to {_self}
+                    if BSXgetID(block {_dir} {_self}) is set:
+                        BSXpower(block {_dir} {_self}, {_distance}, {_self}, BSXflip({_state}))
+        #One Way Gate
+        else if {_id} is "ONE_WAY_GATE_ON":
+            if {_state} is false:
+                if BSXback({_self}'s location, {_self}'s facing) is {_caller}:
+                    set {_dir} to {_self}'s facing
+                    if BSXgetID(block {_dir} {_self}'s location) is set:
+                        set block at {_self}'s location to blue shulker box
+                        set facing of block at {_self} to {_dir}
+                        add nether star named "&0ONE_WAY_GATE_OFF" to inventory of block at {_self}'s location
+                        BSXpower(block {_dir} {_self}'s location, {_distance}, {_self}, {_state})
+        else if {_id} is "ONE_WAY_GATE_OFF":
+            if {_state} is true:
+                if BSXback({_self}'s location, {_self}'s facing) is {_caller}:
+                    set {_dir} to {_self}'s facing
+                    if BSXgetID(block {_dir} {_self}'s location) is set:
+                        set block at {_self}'s location to light gray shulker box
+                        set facing of block at {_self} to {_dir}
+                        add nether star named "&0ONE_WAY_GATE_ON" to inventory of block at {_self}'s location
+                        BSXpower(block {_dir} {_self}'s location, {_distance}, {_self}, {_state})
+        #Repeaters
+        else if {_id} is "REPEATER_OFF":
+            if {_state} is true:
+                set {_delay} to tag "bsx;delay" of nbt compound of {_self}
+                set {_cut} to tag "bsx;cut" of nbt compound of {_self}
+                wait "%{_delay}% ticks" parsed as timespan
+                set nbt block at {_self}'s location to andesite with nbt "{bsx:{id:""REPEATER_ON"",delay:""%{_delay}%"",cut:""%{_cut}%""}}"
+                remove {_caller} from {_sides::*}
+                loop {_sides::*}:
+                    if BSXgetID(loop-value) is set:
+                        BSXpower(loop-value, {_distance}, {_self}, true)
+                if {_cut} parsed as int isn't 0:
+                    wait "%{_cut}% ticks" parsed as timespan
+                    set nbt block at {_self}'s location to tuff with nbt "{bsx:{id:""REPEATER_OFF"",delay:""%{_delay}%"",cut:""%{_cut}%""}}"
+                    loop {_sides::*}:
+                        if BSXgetID(loop-value) is set:
+                            BSXpower(loop-value, {_distance}, {_self}, false)
+        else if {_id} is "REPEATER_ON":
+            if {_state} is false:
+                set {_cut} to tag "bsx;cut" of nbt compound of {_self}
+                if {_cut} parsed as int is 0:
+                    set {_delay} to tag "bsx;delay" of nbt compound of {_self}
+                    wait "%{_delay}% ticks" parsed as timespan
+                    set nbt block at {_self}'s location to tuff with nbt "{bsx:{id:""REPEATER_OFF"",delay:""%{_delay}%"",cut:""%{_cut}%""}}"
+                    loop {_sides::*}:
+                        if BSXgetID(loop-value) is set:
+                            BSXpower(loop-value, {_distance}, {_self}, false)
+        else:
+            BSXerror("Block '%{_self}%' with id '%{_id}%' at '%{_self}'s location%' is not a component!", all players)
+
+
+
+#FUNCTIONS
+function BSXgetID(b:object) :: string:
+    if {_b} is an item:
+        BSXdebug("Getting ID of item '%{_b}%':")
+        if tag "tag;bsx;id" of nbt compound of {_b} is set:
+            set {_tag} to tag "tag;bsx;id" of nbt compound of {_b}
+            BSXdebug("%{_tag}%")
+            return "%{_tag}%"
+    else if {_b} is a block:
+        BSXdebug("Getting ID of block '%{_b}%':")
+        if {_b} is light gray shulker box or blue shulker box:
+            BSXdebug("%uncolored name of slot 0 of {_b}'s inventory% ?shulker")
+            return uncolored name of slot 0 of {_b}'s inventory
+        else if tag "bsx;id" of nbt compound of {_b} is set:
+            set {_tag} to tag "bsx;id" of nbt compound of {_b}
+            BSXdebug("%{_tag}%")
+            return "%{_tag}%"
+function BSXshoot(loc:location, dir:direction, type:boolean, distance:int):
+    if {_distance} is greater than 0:
+        remove 1 from {_distance}
+        wait 1 tick
+        if block at {_loc} is air or end rod:
+            if {_type} is true:
+                Particle({_loc}, end_rod, 3)
+            else:
+                Particle({_loc}, witch, 3)
+            set {_next} to location of block {_dir} {_loc}
+            BSXshoot({_next}, {_dir}, {_type}, {_distance})
+        if BSXgetID(block at {_loc}) is "LAZER_RECIEVER" or "LAZER_RECIEVER_ON":
+            BSXpower(block at {_loc}, 20, {_self}, {_type})
+
+function BSXrndVec(offset:integer, div:integer) :: vector:
+    set {_nOffset} to -1*{_offset}
+    set {_x} to a random integer between {_nOffset} and {_offset}
+    set {_y} to a random integer between {_nOffset} and {_offset}
+    set {_z} to a random integer between {_nOffset} and {_offset}
+    return vector({_x}/{_div}, {_y}/{_div}, {_z}/{_div})
+
+function BSXflip(bool:boolean) :: boolean:
+    if {_bool} is true:
+        return false
+    return true
+
+function BSXsphere(loc:location, type:particle, p:player):
+    loop 10 times:
+        set {_x} to vector(5,0,0)
+        set {_y} to vector(0,5,0)
+        set {_z} to vector(0,0,5)
+        loop 30 times:
+            Particle({_loc}, {_type}, 2)
+            ParticleOffset(x of {_x}, y of {_x}, z of {_x})
+            Particle({_loc}, {_type}, 2)
+            ParticleOffset(x of {_y}, y of {_y}, z of {_y})
+            Particle({_loc}, {_type}, 2)
+            ParticleOffset(x of {_z}, y of {_z}, z of {_z})
+            rotate {_x} around y-axis by 12
+            rotate {_y} around z-axis by 12
+            rotate {_z} around x-axis by 12
+        wait 5 ticks
+
+function BSXreverse(dir:direction) :: direction:
+    if {_dir} is above:
+        set {_dir} to below
+    else if {_dir} is below:
+        set {_dir} to above
+    else if {_dir} is north:
+        set {_dir} to south
+    else if {_dir} is south:
+        set {_dir} to north
+    else if {_dir} is east:
+        set {_dir} to west
+    else if {_dir} is west:
+        set {_dir} to east
+    return {_dir}
+
+function BSXyawOf(dir:direction) :: integer:
+    if {_dir} is "<none>":
+        return 0
+    if {_dir} is above, below or south:
+        return 0
+    if {_dir} is north:
+        return 180
+    if {_dir} is east:
+        return -90
+    if {_dir} is west:
+        return 90
+
+function BSXpitchOf(dir:direction) :: integer:
+    if {_dir} is "<none>":
+        return -90
+    if {_dir} is north, south, east or west:
+        return 0
+    if {_dir} is above:
+        return -90
+    if {_dir} is below:
+        return 90
+
+function BSXback(loc:location, dir:direction) :: block:
+    return block at location of block BSXreverse({_dir}) {_loc}
+
+function BSXradio(start:block, end:block, type:boolean):
+    set {_d} to round(distance between {_start} and {_end})*4
+    set {_dx} to ({_end}'s x coord - {_start}'s x coord)/{_d}
+    set {_dy} to ({_end}'s y coord - {_start}'s y coord)/{_d}
+    set {_dz} to ({_end}'s z coord - {_start}'s z coord)/{_d}
+    set {_x} to {_start}'s x coord
+    set {_y} to {_start}'s y coord
+    set {_z} to {_start}'s z coord
+    loop {_d} times:
+        if {_type} is true:
+            Particle(location({_x}, {_y}, {_z}), sweep_attack, 2)
+            ParticleVector(BSXrndVec(1, 10))
+            wait 1 tick
+        else:
+            play 6 dust using dustOption(red, 0.6) at location({_x}, {_y}, {_z}) offset by BSXrndVec(1, 10) to all players
+            wait 2 tick
+        add {_dx} to {_x}
+        add {_dy} to {_y}
+        add {_dz} to {_z}
+
+#TEXT
+command /bluestonex [<text>] [<text>] [<text>]:
+    description: Everything related to BlueStoneX
+    permission: *
+    aliases: bsx
+    trigger:
+        if arg-1 is set:
+            set {_cmd} to lowercase arg-1
+            if {_cmd} is "help":
+                if arg-2 is set:
+                    BSXhelp(arg-2, player)
+                else:
+                    send ""
+                    BSXmessage("&dTip","&eClick &7on the commands to get more info.", player)
+                    loop {BSXcommands::*}:
+                        BSXlookup(loop-value, player)
+                    send ""
+                stop
+            else if {_cmd} is "menu":
+                if arg-2 is set:
+                    BSXmenu(arg-2 parsed as player)
+                    stop
+                BSXmenu(player)
+            else if {_cmd} is "rename":
+                if arg-2 is set:
+                    if arg-3 is set:
+                        set name of player's tool to colored "%arg-2% %arg-3%"
+                        stop
+                    set name of player's tool to colored arg-2
+                    stop
+                BSXhelp("rename", player)
+            else if {_cmd} is "getvar":
+                if arg-2 is set:
+                    if arg-2 ends with "::*":
+                        set {_temp} to arg-2
+                        replace every "::*" in {_temp} with ""
+                        set {_text::*} to {%{_temp}%::*}
+                        evaluate "send ""&1[&9BlueStone&5&lX&1] &aVar &8|&r The value of list '&7{%%arg-2%%}&r' is '&7%%{%{_text}%::*}%%&r'"" to player"
+                    else:
+                        set {_text} to {%arg-2%}
+                        BSXmessage("&aVar", "The value of '&7{%arg-2%}&r' is '&7%{_text}%&r'", player)
+                    stop
+                BSXhelp("getvar", player)
+                stop
+            else if {_cmd} is "getid":
+                if BSXgetID(player's tool) is set:
+                    BSXmessage("&aID", "The id of this item is &e%BSXgetID(player's tool)%&f.", player)
+                    stop
+                BSXerror("This item doesn't have a BSX id!", player)
+            else if {_cmd} is "eval":
+                if arg-2 is set:
+                    if arg-3 is set:
+                        BSXmessage("&4Evaluating", "&fEvaluating skript (&7%arg-2% %arg-3%&f):", player)
+                        evaluate "%arg-2% %arg-3%"
+                        BSXmessage("&4Evaluating", "&fEvaluation complete", player)
+                        stop
+                    BSXmessage("&4Evaluating", "&fEvaluating skript (&7%arg-2%&f):", player)
+                    evaluate arg-2
+                    BSXmessage("&4Evaluating", "&fEvaluation complete", player)
+                    stop
+                BSXhelp("eval", player)
+            else:
+                BSXerror("That command does not exist!", player)
+        else:
+            send ""
+            BSXmessage("&dTip","&eClick &7on the commands to get more info.", player)
+            loop {BSXcommands::*}:
+                BSXlookup(loop-value, player)
+            send ""
+
+on skbee tab complete of "/bsx":
+    set tab completions for position 1 to {BSXcommands::*}
+    if tab arg-1 = "help":
+        set tab completions for position 2 to {BSXcommands::*}
+on skbee tab complete of "/bluestonex":
+    set tab completions for position 1 to {BSXcommands::*}
+    if tab arg-1 = "help":
+        set tab completions for position 2 to {BSXcommands::*}
+
+function BSXerror(m:string, p:player):
+    send "&1[&9BlueStone&5&lX&1] &cError &8|&r %{_m}%" to {_p}
+
+function BSXdebug(m:string):
+    set {_t} to false
+    if {_t} is true:
+        broadcast "&1[&9BlueStone&5&lX&1] &bDebug &8|&r %{_m}%"
+
+function BSXmessage(t:string, m:string, p:player):
+    if {_t} is "":
+        send "&1[&9BlueStone&5&lX&1]&r %{_m}%" to {_p}
+    else:
+        send "&1[&9BlueStone&5&lX&1]&r %{_t}% &8|&r %{_m}%" to {_p}
+
+function BSXlookup(c:string, p:player):
+    evaluate "send ""&1[&9BlueStone&5&lX&1] &aCommand &8|&r <command:/bsx help %{_c}%><tooltip:/bsx help %{_c}%>&6%{_c}%"" to {_p}"
+
+function BSXusage(m:string, p:player):
+    set {_colored} to {_m}
+    replace all "<" in {_colored} with "&2<&6"
+    replace all ">" in {_colored} with "&2>&6"
+    replace all "|" in {_colored} with "&2|&6"
+    replace all "[" in {_colored} with "&3[&6"
+    replace all "]" in {_colored} with "&3]&6"
+    evaluate "send ""&1[&9BlueStone&5&lX&1] &aUsage &8|&r <suggest command:%{_m}%><tooltip:Copy %{_m}%>&6%{_colored}%"" to {_p}"
+
+function BSXhelp(t:string, p:player):
+    if {_t} is "getvar":
+        BSXusage("/bsx getvar <var>", {_p})
+        BSXmessage("&2Desc.","&7Returns the value of a variable &mor a list&7.", {_p})
+    else if {_t} is "getid":
+        BSXusage("/bsx getid", {_p})
+        BSXmessage("&2Desc.","&7Returns the BSX id of your held item.", {_p})
+    else if {_t} is "eval":
+        BSXusage("/bsx eval <skript>", {_p})
+        BSXmessage("&2Desc.","&7Runs the code you give it.", {_p})
+    else if {_t} is "rename":
+        BSXusage("/bsx rename <name>", {_p})
+        BSXmessage("&2Desc.","&7Renames your held item. You can use colours!", {_p})
+    else if {_t} is "menu":
+        BSXusage("/bsx menu [player]", {_p})
+        BSXmessage("&2Desc.","&7Opens the list of components to a player.", {_p})
+    else if {_t} is "help":
+        BSXusage("/bsx help <сommand>", {_p})
+        BSXmessage("&2Desc.","&7Gives you information about a command.", {_p})
+    else:
+        BSXerror("There is no available description for &7%{_t}%&r.", {_p})
+        stop
+    send "" to {_p}
