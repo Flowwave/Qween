@@ -154,15 +154,12 @@ command /filecord-delete [<string>]:
         if {FileCord.folder} is not set:
             FileCordSend(player,"You haven't set your FileCord folder yet!")
         set {_path} to "plugins/Skript/scripts/%{FileCord.folder}%/%arg 1%.sk"
-        replace all "\" with "/" in {_path}
-        set {_pathf} to {_path}
-        replace all "/" with "\" in {_pathf}
-        if file {_path} and file {_pathf} does not exist:
+
+        if file {_path} does not exist:
             FileCordSend(player,"File %{FileCord.folder}%/%arg 1% didnt exist")
         else:
             unload script file "%{FileCord.folder}%/%arg 1%.sk"
             delete file "plugins/Skript/scripts/%{FileCord.folder}%/-%arg 1%.sk" 
-            delete file "plugins\Skript\scripts\%{FileCord.folder}%\-%arg 1%.sk" 
             
             FileCordSend(player,"Deleted %{FileCord.folder}%/%arg 1%")
 
