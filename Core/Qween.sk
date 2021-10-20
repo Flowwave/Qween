@@ -24,7 +24,7 @@ on load:
     
     AddPackage("BetterErrors")
     
-    command "Qween-Update"
+    #command "Qween-Update"
     
 function AddPackage(name:string):
     set {PackageName::%{_name}%} to {_name}
