@@ -24,11 +24,15 @@ on load:
     
     AddPackage("BetterErrors")
     
-    command "QweenUpdate"
+    command "Qween-Update"
     
 function AddPackage(name:string):
     set {PackageName::%{_name}%} to {_name}
 
+command /eval [<string>]:
+    permission: admin
+    trigger:
+        evaluate arg 1
 command /package-list [<string>]:
     permission: admin
     trigger:
