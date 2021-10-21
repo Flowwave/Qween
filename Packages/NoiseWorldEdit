@@ -1,4 +1,4 @@
-command //setnoise <items> <number>:
+command //nset <items> <number>:
     permission: admin
     trigger:
         add 1 to {timeline}
@@ -12,7 +12,7 @@ command //setnoise <items> <number>:
             NWEset(loop-value,{_mat::%{_n}%},{timeline})
         message "<##12e68d>Changed %size of {_region::*}% blocks"
 
-command //replacenoise <items> <items> <number>:
+command //nreplace <items> <items> <number>:
     permission: admin
     trigger:
         add 1 to {timeline}
@@ -29,14 +29,14 @@ command //replacenoise <items> <items> <number>:
                 add 1 to {_c}
         message "<##12e68d>Changed %{_c}+0% blocks"
         
-command //clearhistory:
+command //nclearhistory:
     permission: admin
     trigger:
         delete {undo::*}
         delete {undoL::*}
         message "<##12e68d>Cleared history"
 
-command ///undo:
+command //nundo:
     permission: admin
     trigger:
         loop {undoL::%{timeline}%::*}:
