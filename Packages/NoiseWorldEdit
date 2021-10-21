@@ -1,0 +1,54 @@
+command //setnoise <items> <number>:
+    permission: admin
+    trigger:
+        add 1 to {timeline}
+        set {_mat::*} to arg 1
+        set {_sc} to size of {_mat::*}
+        set {_region::*} to all blocks within {edit.corner1::%player%} and {edit.corner2::%player%} 
+        set {_scale} to arg 2
+        loop {_region::*}:
+            set {_n} to simplex noise at (x coord of loop-value / {_scale}), (y coord of loop-value / {_scale}), (z coord of loop-value / {_scale})
+            set {_n} to ceil(({_n}+1)/2*{_sc})
+            NWEset(loop-value,{_mat::%{_n}%},{timeline})
+        message "<##12e68d>Changed %size of {_region::*}% blocks"
+
+command //replacenoise <items> <items> <number>:
+    permission: admin
+    trigger:
+        add 1 to {timeline}
+        set {_fmat::*} to arg 1
+        set {_mat::*} to arg 2
+        set {_sc} to size of {_mat::*}
+        set {_region::*} to all blocks within {edit.corner1::%player%} and {edit.corner2::%player%} 
+        set {_scale} to arg 3
+        loop {_region::*}:
+            if {_fmat::*} contains type of block at loop-value:
+                set {_n} to simplex noise at (x coord of loop-value / {_scale}), (y coord of loop-value / {_scale}), (z coord of loop-value / {_scale})
+                set {_n} to ceil(({_n}+1)/2*{_sc})
+                NWEset(loop-value,{_mat::%{_n}%},{timeline})
+                add 1 to {_c}
+        message "<##12e68d>Changed %{_c}+0% blocks"
+        
+command //clearhistory:
+    permission: admin
+    trigger:
+        delete {undo::*}
+        delete {undoL::*}
+        message "<##12e68d>Cleared history"
+
+command ///undo:
+    permission: admin
+    trigger:
+        loop {undoL::%{timeline}%::*}:
+            set block at loop-value to {undo::%{timeline}%::%loop-index%}
+        delete {undo::%{timeline}%::*}
+        delete {undoL::%{timeline}%::*}
+        
+        remove 1 from {timeline}
+        message "<##12e68d>Undid 1 action"
+
+function NWEset(l:location,m:item,u:number):
+    set {undo::%{_u}%::%{_l}%} to type of block at {_l}
+    set {undoL::%{_u}%::%{_l}%} to {_l}
+    
+    set block at {_L} to {_m}
