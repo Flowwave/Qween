@@ -1,7 +1,3 @@
-#
-# Made by Endergamer_hun#3696
-#
-
 command /easyclicks [<string>] [<string>]:
     trigger:
         if arg-1 is set:
@@ -20,7 +16,7 @@ command /easyclicks [<string>] [<string>]:
                     ECmessage("&cYou need to be holding an item!", player)
                     send ""
                     stop
-                if lowercase arg-1 is "lc" or "leftclick":
+                else if lowercase arg-1 is "lc" or "leftclick":
                     if player's tool isn't air:
                         set {_nbt} to nbt compound of player's tool
                         if arg-2 is ".":
@@ -34,11 +30,42 @@ command /easyclicks [<string>] [<string>]:
                     ECmessage("&cYou need to be holding an item!", player)
                     send ""
                     stop
+                else if lowercase arg-1 is "ic" or "invclick":
+                    if player's tool isn't air:
+                        set {_nbt} to nbt compound of player's tool
+                        if arg-2 is ".":
+                            delete tag "tag;easyclicks;invClick" of {_nbt}
+                            ECmessage("Successfully removed inventory click event!", player)
+                        else:
+                            set tag "tag;easyclicks;invClick" of {_nbt} to arg-2
+                            ECmessage("Successfully set inventory click event to '&7%{_nbt}%&f'!", player)
+                        set player's tool to item from nbt {_nbt}
+                        stop
+                    ECmessage("&cYou need to be holding an item!", player)
+                    send ""
+                    stop
+                else if lowercase arg-1 is "it" or "invtype":
+                    if player's tool isn't air:
+                        set {_nbt} to nbt compound of player's tool
+                        if arg-2 is ".":
+                            delete tag "tag;easyclicks;invType" of {_nbt}
+                            ECmessage("Successfully removed inventory click event!", player)
+                        else:
+                            set tag "tag;easyclicks;invType" of {_nbt} to arg-2
+                            ECmessage("Successfully set inventory click event to '&7%{_nbt}%&f'!", player)
+                        set player's tool to item from nbt {_nbt}
+                        stop
+                    ECmessage("&cYou need to be holding an item!", player)
+                    send ""
+                    stop
         send ""
-        send "&d[&eEasyClicks&d] &bUsage: <suggest command:/easyclicks <rc|lc> <skript>><tooltip:Copy &6/easyclicks &2<&6rc&2|&6lc&2>&6 &2<&6skript&2>>&6/easyclicks &2<&6rc&2|&6lc&2>&6 &2<&6skript&2>"
-        ECmessage("Runs the code on &eright&f or &eleft click&f.", player)
+        send "&d[&eEasyClicks&d] &bUsage: <suggest command:/easyclicks <rc|lc|ic|it> <skript>><tooltip:Copy &6/easyclicks &2<&6rc&2|&6lc&2|&6ic&2|&6it&2>&6 &2<&6skript&2>>&6/easyclicks &2<&6rc&2|&6lc&2|&6ic&2|&6it&2>&6 &2<&6skript&2>"
+        ECmessage("Runs the code on &eright&f, &eleft&f or &einventory click&f.", player)
         ECmessage("Set <skript> to ""&e.&f"" to delete it.", player)
         ECmessage("Start <skript> with ""&e/&f"" to run it as a command.", player)
+        ECmessage("You can check for click type too.", player)
+        ECmessage("If <skript> starts with ""&e-&f"" to make it exact match. It would use contains otherwise", player)
+        ECmessage("Starting with ""&e!&f"" will cancel the click event if you aren't in creative. Order: !-", player)
 
 function ECmessage(m:string, p:player):
     send "&d[&eEasyClicks&d]&r %{_m}%" to {_p}
@@ -54,6 +81,29 @@ on right click:
 on left click:
     set {_nbt} to nbt compound of player's tool
     set {_value} to tag "tag;easyclicks;leftClick" of nbt compound of player's tool
+    if {_value} starts with "/":
+        replace first "/" in {_value} with ""
+        command {_value}
+    else:
+        evaluate {_value}
+
+on inventory click:
+    set {_nbt} to nbt compound of event-item
+    set {_value} to tag "tag;easyclicks;invClick" of nbt compound of event-item
+    set {_type} to tag "tag;easyclicks;invType" of nbt compound of event-item
+    {_value} is set
+    if tag "tag;easyclicks;invType" of nbt compound of event-item is set:
+        if {_type} starts with "!":
+            player's gamemode isn't creative
+            replace first "!" in {_type} with ""
+            cancel event
+    if {_type} starts with "-":
+        replace first "-" in {_type} with ""
+        "%click type%" isn't {_type}
+        stop
+    else:
+        "%click type%" does not contain {_type}
+        stop
     if {_value} starts with "/":
         replace first "/" in {_value} with ""
         command {_value}
