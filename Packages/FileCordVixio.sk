@@ -20,8 +20,11 @@ on guild message received:
             replace all "DELETE:" with "" in {_msg}
             add reaction "x" to event-message with event-bot
             replace all "\" with "/" in {_msg}
-            delete file "plugins/Skript/scripts/%{FileCord.folder}%/%{_msg}%"
-            unload script {_msg}
+            unload script "%{FileCord.folder}%/%{_msg}%"
+            set {_splited::*} to {_msg} split at "/"
+            set {_splited::%size of {_splited::*}%} to "-%last element of {_splited::*}%"
+            set {_join} to join {_splited::*} with "/"
+            delete file "plugins/Skript/scripts/%{FileCord.folder}%/%{_join}%"
             stop
         set {_x} to "%attachment of event-message%"
         set {_link} to attachment url of attachment of event-message
