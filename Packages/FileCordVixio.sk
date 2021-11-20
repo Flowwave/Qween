@@ -15,7 +15,14 @@ on load:
 
 on guild message received:
     if discord id of event-channel is {FileCord.channel}:
-        
+        set {_msg} to "%event-message%"
+        if {_msg} contains "DELETE":
+            replace all "DELETE:" with "" in {_msg}
+            add reaction "x" to event-message with event-bot
+            replace all "\" with "/" in {_msg}
+            delete file "plugins/Skript/scripts/%{FileCord.folder}%/%{_msg}%"
+            unload script {_msg}
+            stop
         set {_x} to "%attachment of event-message%"
         set {_link} to attachment url of attachment of event-message
         
