@@ -15,6 +15,7 @@ on load:
 
 on guild message received:
     if discord id of event-channel is {FileCord.channel}:
+        set {skPath} to "plugins/Skript/scripts/%{FileCord.folder}%"
         set {_msg} to "%event-message%"
         if {_msg} contains "DELETE":
             replace all "DELETE:" with "" in {_msg}
