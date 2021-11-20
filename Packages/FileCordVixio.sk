@@ -89,6 +89,14 @@ on guild message received:
                 download file from {_link} to file "plugins/%{_x}%"
                 FileCordBroadcast("Finished downloading plugin! A reload or restart is required for it to take effect!")
                 stop
+            if {_x} contains ".perm":
+                add reaction "ballot_box_with_check" to event-message with event-bot
+                if {FileCord.setting::autodelete}:
+                    delete event-message
+                delete file "plugins/Skript/scripts/%{FileCord.folder}%/%{_x}%"
+                download file from {_link} to file "plugins/Skript/scripts/%{FileCord.folder}%/%{_x}%"
+                
+                stop
             add reaction "grey_question" to event-message with event-bot
         else:
             add reaction "question" to event-message with event-bot
