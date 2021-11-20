@@ -187,7 +187,9 @@ function FileCordSend(p:player,m:string):
     message "<##00847A>[FileCord] &8| &f%{_m}%" to {_p}
 
 function FileCordBroadcast(m:string):
-    broadcast "<##00847A>[FileCord] &8| &f%{_m}%"
+    loop all players:
+        if loop-player is op:
+            send formatted "<##00847A>[FileCord] &8| &f%{_m}%" to loop-player
 
 on tab complete of "/filecord-delete":
     set {_scripts::*} to loaded scripts 
