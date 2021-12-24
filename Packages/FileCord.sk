@@ -1,7 +1,7 @@
 
 on load:
-    if list of addons does not contain "Vixio" or "Vixio*":
-        FileCordBroadcast("Warning! FileCord needs Vixio to function!")
+    if list of addons does not contain "DiSky" or "DiSky*":
+        FileCordBroadcast("Warning! FileCord needs DiSky to function!")
     wait 2 seconds 
     if {FileCord.token} is not set:
         FileCordBroadcast("FileCord token is not set!")
