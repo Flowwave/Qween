@@ -1,5 +1,7 @@
 on every second:
     loop files in dir including sub dirs "plugins/Skript/scripts/":
+        if "%loop-value%" does not contain ".sk":
+            continue
         set {_x} to file loop-value's last modified value
         if {fileAge::%loop-value%} is less than {_x}:
             set {_split::*} to loop-value split at "scripts\"
