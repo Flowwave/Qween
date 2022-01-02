@@ -54,7 +54,7 @@ function Rainbow(input: string, wrapAmount: number = -1, lightness: number = 0.5
 # @param endColor a list of three numbers representing the RGB values of the color to be reached
 # @param wrapAmount if this value is positive, the gradient pattern will start repeating approximately every wrapAmount characters
 # @return the colored string in a gradient pattern
-function Gradient(input: string, startColor: numbers, endColor: numbers, wrapAmount: number = -1, shift:number = 0) :: string:
+function Gradient(input: string, startColor: numbers, endColor: numbers, wrapAmount: number = -1, shift:number = 0, insert:string = "") :: string:
     set {_delta} to 180 / ({_wrapAmount} if {_wrapAmount} > 0, else (length of uncolored {_input}) - 1)
     set {_angle} to 90 + {_shift}
     loop length of {_input} times:
@@ -65,6 +65,6 @@ function Gradient(input: string, startColor: numbers, endColor: numbers, wrapAmo
             continue
         set {_startColorProportion} to (0.5 * (sin({_angle}) + 1))
         set {_endColorProportion} to (0.5 * (sin({_angle} + 180) + 1))
-        set {_output} to join {_output}, "<##%decimalToHexadecimal(({_startColor::1} * {_startColorProportion}) + ({_endColor::1} * {_endColorProportion}))%%decimalToHexadecimal(({_startColor::2} * {_startColorProportion}) + ({_endColor::2} * {_endColorProportion}))%%decimalToHexadecimal(({_startColor::3} * {_startColorProportion}) + ({_endColor::3} * {_endColorProportion}))%>", {_format} and {_character}
+        set {_output} to join {_output}, "<##%decimalToHexadecimal(({_startColor::1} * {_startColorProportion}) + ({_endColor::1} * {_endColorProportion}))%%decimalToHexadecimal(({_startColor::2} * {_startColorProportion}) + ({_endColor::2} * {_endColorProportion}))%%decimalToHexadecimal(({_startColor::3} * {_startColorProportion}) + ({_endColor::3} * {_endColorProportion}))%>", {_format}, {_insert} and {_character}
         add {_delta} to {_angle}
     return colored {_output}
