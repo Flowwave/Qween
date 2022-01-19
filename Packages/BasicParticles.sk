@@ -34,12 +34,12 @@ function ParticlePlayer(p:player):
 function Emit():
     loop {emitForce::*}:
         if loop-value:
-            play {emitAmount::%loop-index%} of {emitParticle::%loop-index%} at {emitLoc::%loop-index%} offset by {emitVector::%loop-index%} with extra {emitSpeed::%loop-index%} to all players
+            draw {emitAmount::%loop-index%} of {emitParticle::%loop-index%} at {emitLoc::%loop-index%} offset by {emitVector::%loop-index%} with extra {emitSpeed::%loop-index%} to all players
         else:
             if {emitPlayer::%loop-index%} is set:
-                play {emitAmount::%loop-index%} of {emitParticle::%loop-index%} at {emitLoc::%loop-index%} offset by {emitVector::%loop-index%} with extra {emitSpeed::%loop-index%} to {emitPlayer::%loop-index%}
+                draw {emitAmount::%loop-index%} of {emitParticle::%loop-index%} at {emitLoc::%loop-index%} offset by {emitVector::%loop-index%} with extra {emitSpeed::%loop-index%} to {emitPlayer::%loop-index%}
             else:
-                play {emitAmount::%loop-index%} of {emitParticle::%loop-index%} at {emitLoc::%loop-index%} offset by {emitVector::%loop-index%} with extra {emitSpeed::%loop-index%}
+                draw {emitAmount::%loop-index%} of {emitParticle::%loop-index%} at {emitLoc::%loop-index%} offset by {emitVector::%loop-index%} with extra {emitSpeed::%loop-index%}
 
 on every tick:
     Emit()
