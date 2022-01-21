@@ -1,0 +1,177 @@
+# By Wahfia Waluigi
+
+on Load:
+	set {NoiseBlocks::*} to white concrete, light gray concrete, cyan terracotta, gray concrete, gray terracotta and black concrete
+
+function ItemData(Item:item, tag:string, value:string) :: item:
+	set {_Item} to nbt compound of {_Item}
+	set tag "tag;%{_tag}%" of {_Item} to {_value}
+	return item from nbt {_Item}
+
+function ClickActions(Item:item, CmdLeft:string, CmdRight:string) :: item:
+	set {_item} to ItemData({_Item}, "left", {_CmdLeft})
+	set {_item} to ItemData({_item}, "right", {_CmdRight})
+	return {_item}
+
+function FormatSlot(Slot:int, GUI: inventory, Item: item):
+	set slot {_Slot} of {_GUI} to {_Item}
+
+function NoiseValueMove(p: player, Incement:number, Slot: int):
+	set {_item} to slot {_Slot} of {_p}'s current inventory
+	set {_lore} to uncolored line 1 of {_item}'s lore
+	set {_num::*} to {_lore} split at "Value: " 
+	set {_int} to uncolored {_num::2} parsed as number + {_Incement}
+	if {_int} < 0:
+		set {_int} to 0
+	if {_int} > 1:
+		set {_int} to 1
+	set slot {_Slot} of {_p}'s current inventory to {_item} with lore "&3Value&7: &1%{_int}%"
+
+function NoiseGenerate(p: player, Slot: int):
+	set {_MenuItem} to slot {_Slot} of {_p}'s current inventory
+	set {_Seed} to a random integer between 000000000 and 999999999
+	set {_Gen} to new perlin generator with seed {_Seed}
+	loop 6 times:
+		set {_item} to slot (loop-number * 9) - 1 of {_p}'s current inventory
+		if {_item}'s type is paper:
+			set {_lore} to uncolored line 1 of {_item}'s lore
+			set {_num::*} to {_lore} split at "Value: " 
+			set {_int} to uncolored {_num::2} parsed as number
+			if {_int} = 0:
+				add 0.05 to {_Values::*}
+			else:
+				add {_int} to {_Values::*}
+	set {_item} to slot 6 of {_p}'s current inventory
+	set {_lore} to uncolored line 1 of {_item}'s lore
+	set {_num::*} to {_lore} split at "Value: " 
+	set {_freq} to uncolored {_num::2} parsed as number
+
+	set {_loc} to {_p}'s location
+	set y-pos of {_loc} to 1
+	set frequency of {_gen} to {_freq}
+	loop 6 times:
+		loop 6 times:
+			set {_int} to ((-1 + loop-number-1) * 9) + (-1 + loop-number-2)
+			set x-pos of {_loc} to loop-number-1
+			set z-pos of {_loc} to loop-number-2
+			set {_value} to value of {_Gen} at {_loc}
+			if {_value} <= -0:
+				set {_value} to ({_value} * -1)
+			if {_value} <= {_Values::1}:
+				set slot {_int} of {_p}'s current inventory to {NoiseBlocks::1} named "%loop-number-1%:%loop-number-2%"
+			else if {_value} <= {_Values::2}:
+				set slot {_int} of {_p}'s current inventory to {NoiseBlocks::2} named "%loop-number-1%:%loop-number-2%"
+			else if {_value} <= {_Values::3}:
+				set slot {_int} of {_p}'s current inventory to {NoiseBlocks::3} named "%loop-number-1%:%loop-number-2%"
+			else if {_value} <= {_Values::4}:
+				set slot {_int} of {_p}'s current inventory to {NoiseBlocks::4} named "%loop-number-1%:%loop-number-2%"
+			else if {_value} <= {_Values::5}:
+				set slot {_int} of {_p}'s current inventory to {NoiseBlocks::5} named "%loop-number-1%:%loop-number-2%"
+			else if {_value} <= {_Values::6}:
+				set slot {_int} of {_p}'s current inventory to {NoiseBlocks::6} named "%loop-number-1%:%loop-number-2%"
+	set slot {_Slot} of {_p}'s current inventory to {_MenuItem} with lore "&3Noise Seed&7: &9%{_Seed}%"
+
+function AddNoiseBlock(p: player, Slot: int):
+	set {_item} to paper named "&7Block Value" with lore "&3Value&7: &10"
+	if {_Slot} is 7:
+		set {_item1} to {NoiseBlocks::1}
+	if {_Slot} is 16:
+		set {_item1} to {NoiseBlocks::2}
+	if {_Slot} is 25:
+		set {_item1} to {NoiseBlocks::3}
+	if {_Slot} is 34:
+		set {_item1} to {NoiseBlocks::4}
+	if {_Slot} is 43:
+		set {_item1} to {NoiseBlocks::5}
+	if {_Slot} is 52:
+		set {_item1} to {NoiseBlocks::6}
+	set slot {_Slot} of {_p}'s current inventory to {_item1}
+	set slot (1 + {_Slot}) of {_p}'s current inventory to ClickActions({_item}, "NoiseValueMove(player, 0.05, index of event-slot)", "NoiseValueMove(player, -0.05, index of event-slot)")
+	set slot (9 + {_Slot}) of {_p}'s current inventory to ClickActions(Red stained glass pane named "Add Noise Block", "AddNoiseBlock(player, index of event-slot)", "null")
+
+function NoiseGenSquare(p: player):
+	set {_item} to slot 51 of {_p}'s current inventory
+	set {_lore} to uncolored line 1 of {_item}'s lore
+	set {_num::*} to {_lore} split at "Noise Seed: " 
+	set {_Seed} to uncolored {_num::2} parsed as number
+	set {_Gen} to new perlin generator with seed {_Seed}
+	loop 6 times:
+		set {_item} to slot (loop-number * 9) - 1 of {_p}'s current inventory
+		if {_item}'s type is paper:
+			set {_lore} to uncolored line 1 of {_item}'s lore
+			set {_num::*} to {_lore} split at "Value: " 
+			set {_int} to uncolored {_num::2} parsed as number
+			if {_int} = 0:
+				add 0.05 to {_Values::*}
+			else:
+				add {_int} to {_Values::*}
+	set {_item} to slot 6 of {_p}'s current inventory
+	set {_lore} to uncolored line 1 of {_item}'s lore
+	set {_num::*} to {_lore} split at "Value: " 
+	set {_freq} to uncolored {_num::2} parsed as number
+
+	set frequency of {_gen} to {_freq}
+	loop 25 times:
+		loop 25 times:
+			set {_playerloc} to {_p}'s location
+			add loop-number-1 to x-pos of {_playerloc}
+			add loop-number-2 to z-pos of {_playerloc}
+			set {_value} to value of {_Gen} at {_playerloc}
+			if {_value} <= 0:
+				set {_value} to ({_value} * -1)
+			if {_value} <= {_Values::1}:
+				set block at {_playerloc} to {NoiseBlocks::1}
+			else if {_value} <= {_Values::2}:
+				set block at {_playerloc} to {NoiseBlocks::2}
+			else if {_value} <= {_Values::3}:
+				set block at {_playerloc} to {NoiseBlocks::3}
+			else if {_value} <= {_Values::4}:
+				set block at {_playerloc} to {NoiseBlocks::4}
+			else if {_value} <= {_Values::5}:
+				set block at {_playerloc} to {NoiseBlocks::5}
+			else if {_value} <= {_Values::6}:
+				set block at {_playerloc} to {NoiseBlocks::6}
+			else:
+				broadcast "&4Noise Tester ERROR"
+
+command /NoiseTester:
+	trigger:
+		set {_GUI} to a new chest inventory named "Noise Tester" with 6 rows
+		loop 6 times:
+			loop 6 times:
+				set {_int} to ((-1 + loop-number-1) * 9) + (-1 + loop-number-2) 
+				FormatSlot({_int}, {_GUI}, white concrete named "%loop-number-1%:%loop-number-2%")
+		loop 6 times:
+			FormatSlot((-1 + loop-number) * 9 + 6, {_GUI}, gray stained glass pane named "")
+			
+		FormatSlot(7, {_GUI}, ClickActions(Red stained glass pane named "Add Noise Block", "AddNoiseBlock(player, index of event-slot)", "null"))
+		
+		set {_item} to Orange stained glass pane named "Noise Frequency" with lore "&3Value&7: &10"
+		FormatSlot(6, {_GUI}, ClickActions({_item}, "NoiseValueMove(player, 0.05, index of event-slot)", "NoiseValueMove(player, -0.05, index of event-slot)"))
+
+		set {_item} to lime stained glass pane named "&2Generate Noise" with lore "&3Noise Seed&7: &9000000000"
+		FormatSlot(51, {_GUI}, ClickActions({_item}, "NoiseGenerate(player, index of event-slot)", "null")) 
+		
+		set {_item} to blue stained glass pane named "&3Generate Square at Player" with lore "&4WARNING&8: &cCould Destroy Blocks when Generating Noise into World Space &8(&325x25&8)"
+		FormatSlot(24, {_GUI}, ClickActions({_item}, "NoiseGenSquare(player)", "null"))
+		
+		wait 1 tick
+		open {_GUI} to player
+
+on inventory click:
+	if event-inventory is not player's inventory:
+		if event-item != air:
+			set {_item} to event-item
+			cancel event
+			if event-click type = left mouse button:
+				set {_action} to tag "tag;left" of nbt compound of {_item}
+			if event-click type = right mouse button:
+				set {_action} to tag "tag;right" of nbt compound of {_item}
+			if {_action} is set:
+				if lowercase {_action} != "null":
+					if {_action} contains "/":
+						replace first "/" with "" in {_action}
+						command {_action}
+					else:
+						evaluate {_action}
+
