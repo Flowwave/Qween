@@ -133,10 +133,10 @@ function GetVarDisplay(var:object) :: string:
     return "&d%{_var}%"
 
 function SendVarManagerCopyable(player:player,message:string,copy:string,tooltip:string="Click to copy"):
-    send formatted "<tooltip:%{_tooltip}%><suggest command:%{_copy}%><##3FBA80>[VarManager] &8| &f%{_message}%" to {_player}
+    send formatted "<tooltip:%{_tooltip}%><suggest command:%{_copy}%>&3[VarManager] &8| &f%{_message}%" to {_player}
 
 function SendVarManager(player:player,message:string):
-    send formatted "<##3FBA80>[VarManager] &8| &f%{_message}%" to {_player}
+    send formatted "&3[VarManager] &8| &f%{_message}%" to {_player}
 
 
 on tab complete of "/var":
