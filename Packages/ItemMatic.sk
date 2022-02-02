@@ -16,12 +16,12 @@ command /modeldata [<number>]:
 command /rename [<string>]:
     permission: admin 
     trigger:
-        set name of player's tool to CustomColor(arg 1)
+        set name of player's tool to formatted CustomColor(arg 1)
 
 command /setlore [<number=1>] [<string>]:
     permission: admin 
     trigger:
-        set line (arg 1) of lore of player's tool to CustomColor(arg 2)
+        set line (arg 1) of lore of player's tool to formatted CustomColor(arg 2)
 
 command /colorgenerate:
     trigger:
