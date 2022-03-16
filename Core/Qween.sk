@@ -138,7 +138,7 @@ command /sk [<string>]:
     permission: admin
     trigger:
         if arg 1 contains "enable" or "disable" or "help" or "update" or "info":
-            Reload(arg 1)
+            ReloadScript(arg 1)
             stop
         set {_script} to arg 1
         replace all "reload " with "" in {_script}
