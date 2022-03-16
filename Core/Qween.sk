@@ -138,18 +138,79 @@ command /sk [<string>]:
     permission: admin
     trigger:
         if arg 1 contains "enable" or "disable" or "help" or "update" or "info":
-            make player execute command "skript %arg 1%"
+            Reload(arg 1)
             stop
         set {_script} to arg 1
         replace all "reload " with "" in {_script}
 
         if loaded scripts contains {_script}:
-            set {_now} to now
-            message " "
-            make player execute command "skript reload %{_script}%"
-            message " &7Reloaded in %difference between now and {_now}%"
+            ReloadScript(arg 1)
         else:
-            make player execute command "skript reload %{_script}%"
+            ReloadScript(arg 1)
+
+
+function ReloadScript(sk:string):
+    loop all players:
+        if loop-player is op:
+            add loop-player to {_ops::*}
+    set {_sizeOld} to line count of file "logs/latest.log"
+
+    send "<##FF6D9E>[Skript] &8| &fReloading &e%{_sk}%&f..." to {_ops::*}
+    set {_now} to now
+    command "skript reload %{_sk}%"
+    set {_sizeNew} to line count of file "logs/latest.log"
+    set {_lookbackCount} to min({_sizeNew} - {_sizeOld},  30)
+    set {_warnCol} to "<##FF9456> "
+    set {_errorCol} to "<##DD2340> "
+    send " " to {_ops::*}
+
+    loop {_lookbackCount} times:
+        set {_c} to {_sizeNew} + (loop-number - {_lookbackCount})
+        set {_line} to line floor({_c}) in file "logs/latest.log"
+        if {_line} contains "Error" or "Warn":
+            set {_errorS::*} to {_line} split at "]: "
+            set {_error::*} to {_errorS::2} split at " ("
+            set {_error} to {_error::1}
+            if {_error} contains "Empty Configuration section! You might want to":
+                set {_error} to "Empty configuration section! expected an indent"
+            if {_error} contains "[Skript] Encountered":
+                continue
+            set {_s::*} to {_line} split at "sk, line "
+            set {_split::*} to last element of {_s::*} split at ":"
+            
+            set {_lineNumber} to {_split::1} parsed as number 
+
+            if {_line} contains "Error":
+                set {_col} to {_errorCol}
+                add 1 to {_errors}
+            else:
+                set {_col} to {_warnCol}
+                add 1 to {_warns}
+
+            set {_url} to "https://duckduckgo.com/?t=ffab&q=Skript+%{_error}%"
+            replace all " " with "+" in {_url}
+            if {_lineNumber} is not set:
+                send formatted "<tooltip:Click to search><url:%{_url}%>%{_col}%Mirror Error&8 | &f%{_error}%" to all players 
+            else:
+                send formatted "<tooltip:Click to search><url:%{_url}%>%{_col}%Line %{_lineNumber}%&8 | &f%{_error}%" to all players 
+            add 1 to {_error}
+    if {_errors} + {_warns} is not 0:
+        send " " to {_ops::*}
+
+    send "<##FF6D9E>[Skript] &8| &fFinished reloading in %difference between now and {_now}%!" to {_ops::*}
+
+    set {_sound} to "entity.cat.ambient"
+    set {_pitch} to 1.6
+    
+    if {_warns} > 0:
+        set {_sound} to "entity.cat.ambient"
+        set {_pitch} to 1
+    if {_errors} > 0:
+        set {_sound} to "entity.wither.hurt"
+
+    loop {_ops::*}:
+        play sound {_sound} with pitch {_pitch} to loop-value
+    
 
 on tab complete of "/sk":
     set {_scripts::*} to loaded scripts 
