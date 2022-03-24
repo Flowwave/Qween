@@ -1,0 +1,81 @@
+
+command /fileMaster [<string>]:
+    permission: admin
+    trigger:
+        if arg 1 is "sc":
+            FileMaster(player,("plugins/Skript/scripts/"))
+            stop
+        FileMaster(player,(arg 1 ? "/"))
+
+function FileMaster(p:player,f:string):
+    open chest with 6 rows named "%{_f}%" to {_p}
+    set {_s} to 0
+    Sound({_p},"block.chest.open",1.1,0.2)
+    Sound({_p})
+    loop files in dir {_f}:
+        set {_path::*} to loop-value split at "/"
+        set {_file} to last element of {_path::*}
+        set {_i} to chest
+        if {_file} contains ".":
+            set {_i} to paper
+        
+        if {_file} contains "_copy":
+            set {_i} to empty map
+        if {_file} contains ".jar":
+            set {_i} to enchanted book
+        if {_file} contains ".json":
+            set {_i} to comparator
+        if {_file} contains ".zip":
+            set {_i} to ender chest
+        if {_file} contains ".sk":
+            set {_i} to filled map
+            if {_file} contains "-":
+                add "{display:{MapColor:6033681},HideFlags:127}" to nbt of {_i}
+            else:
+                add "{display:{MapColor:1471814},HideFlags:127}" to nbt of {_i}
+            set {_count} to size of file "%loop-value%" ? "Unknown"
+
+            set line 1 of lore of {_i} to "&8 %{_count}%"
+
+        if {_file} contains "server.jar":
+            set {_i} to bedrock
+        if {_i} is chest:
+            set {_count} to size of dir "%loop-value%" ? "Unknown"
+            if "%{_count}%" contains "GB":
+                set {_i} to anvil
+            set line 1 of lore of {_i} to "&8 %{_count}%"
+        set name of {_i} to "&6%{_file}%"
+        FileMasterSlot({_p},{_s},{_i},loop-value)
+        add 1 to {_s}
+        delete {_path::*}
+    set {_f::*} to {_f} split at "/"
+    delete {_f::%size of {_f::*}%}
+    
+    set {_pf} to join {_f::*} with "/" ? ""
+    set slot 9*6 - 2 of {_p}'s current inventory to barrier named "&cDeletion Tool"
+    set slot 9*6 - 3 of {_p}'s current inventory to diamond named "&3Download Tool"
+    FileMasterSlot({_p},9*6 - 1,chest named "&6%{_pf}%",{_pf})
+
+function FileMasterSlot(p:player,s:number,i:item,c:string=""):
+    add "{fileMaster:""%{_c}%""}" to nbt of {_i}
+    set slot {_s} of {_p}'s current inventory to {_i}
+
+on inventory click:
+    if nbt of event-item contains "fileMaster:":
+        cancel event
+        set {_n} to tag "fileMaster" of nbt of event-item
+        set {_path::*} to {_n} split at "/"
+        set {_file} to last element of {_path::*}
+        if {_file} does not contain ".":
+            if player's cursor slot is barrier:
+                delete file {_n}
+                set player's cursor slot to air
+                FileMaster(player, name of player's current inventory)
+                stop
+
+            FileMaster(player,{_n})
+        else:
+            if player's cursor slot is barrier:
+                delete file {_n}
+                set player's cursor slot to air
+                FileMaster(player, name of player's current inventory)
