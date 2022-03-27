@@ -10,7 +10,7 @@ on load:
         set {worldEditWand} to unbreakable wooden shovel named "&dWorld Edit Wand"
 
 
-on offhand switch:
+on swap hand items:
     if player's gamemode is creative:
         if player's tool is 0 air:
             if player's offhand tool is 0 air:
