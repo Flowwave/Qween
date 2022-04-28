@@ -190,12 +190,15 @@ function ReloadScript(sk:string):
             set {_url} to "https://duckduckgo.com/?t=ffab&q=Skript+%{_error}%"
             replace all " " with "+" in {_url}
             if {simpleError}:
-                send formatted "<tooltip:Click to search>%{_line}%" to all players 
+                send formatted "<tooltip:Click to search>%{_line}%" to {_ops::*}
+ 
                 
             if {_lineNumber} is not set:
-                send formatted "<tooltip:Click to search><url:%{_url}%>%{_col}%Other&8 | &f%{_error}%" to all players 
+                send formatted "<tooltip:Click to search><url:%{_url}%>%{_col}%Other&8 | &f%{_error}%" to {_ops::*}
+ 
             else:
-                send formatted "<tooltip:Click to search><url:%{_url}%>%{_col}%Line %{_lineNumber}%&8 | &f%{_error}%" to all players 
+                send formatted "<tooltip:Click to search><url:%{_url}%>%{_col}%Line %{_lineNumber}%&8 | &f%{_error}%" to {_ops::*}
+ 
             add 1 to {_error}
     if {_errors} + {_warns} is not 0:
         send " " to {_ops::*}
